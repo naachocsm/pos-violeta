@@ -422,13 +422,15 @@
             const texto = document.getElementById('paste-area').value;
             if (!texto.trim()) return mostrarToast('Pega los datos del Excel primero.', 'error');
 
-            const lineas = texto.split('\n');
+            const lineas = texto.split('\n').filter(l => l.trim());
             let nuevoInventario = [];
-            let codeIdx = 0, nameIdx = 1, priceIdx = 3;
+            let codeIdx = 0, nameIdx = 1, priceIdx = 2;
             let startIndex = 0;
 
             const headers = lineas[0].toLowerCase();
-            if (headers.includes('producto') || headers.includes('código') || headers.includes('código de barras')) {
+            const tieneEncabezado = headers.includes('producto') || headers.includes('código') || headers.includes('código de barras');
+
+            if (tieneEncabezado) {
                 startIndex = 1;
                 const hCols = lineas[0].split('\t').map(h => h.trim().toLowerCase());
                 const fCode = hCols.findIndex(h => h.includes('código') || h.includes('codigo'));
@@ -438,6 +440,44 @@
                 if (fCode !== -1) codeIdx = fCode;
                 if (fName !== -1) nameIdx = fName;
                 if (fPrice !== -1) priceIdx = fPrice;
+            } else {
+                // Sin fila de encabezado: no asumimos una posición fija de columna,
+                // la detectamos mirando el contenido de una muestra de filas.
+                const muestra = lineas.slice(0, Math.min(20, lineas.length)).map(l => l.split('\t'));
+                const numCols = Math.max(...muestra.map(c => c.length));
+                const esPrecio = (v) => /^\$[\d.,]+$/.test((v || '').trim());
+
+                const puntajePrecio = [];
+                const largoPromedio = [];
+                for (let col = 0; col < numCols; col++) {
+                    let aciertos = 0, largoTotal = 0, filas = 0;
+                    muestra.forEach(cols => {
+                        const v = (cols[col] || '').trim();
+                        if (!v) return;
+                        filas++;
+                        if (esPrecio(v)) aciertos++;
+                        largoTotal += v.length;
+                    });
+                    puntajePrecio[col] = filas ? aciertos / filas : 0;
+                    largoPromedio[col] = filas ? largoTotal / filas : 0;
+                }
+
+                priceIdx = puntajePrecio.indexOf(Math.max(...puntajePrecio));
+                if (puntajePrecio[priceIdx] < 0.5) priceIdx = 2;
+
+                let mejorLargo = -1;
+                for (let col = 0; col < numCols; col++) {
+                    if (col === priceIdx) continue;
+                    if (largoPromedio[col] > mejorLargo) {
+                        mejorLargo = largoPromedio[col];
+                        nameIdx = col;
+                    }
+                }
+
+                codeIdx = 0;
+                if (codeIdx === priceIdx || codeIdx === nameIdx) {
+                    codeIdx = [1, 2, 3, 4].find(c => c !== priceIdx && c !== nameIdx) ?? 0;
+                }
             }
 
             for (let i = startIndex; i < lineas.length; i++) {
