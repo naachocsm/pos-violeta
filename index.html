@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <title>POS Emergencia | Farmacia La Violeta</title>
+    <style>
+        :root {
+            --morado-oscuro: #4a148c;
+            --morado-vibrante: #8b5cf6;
+            --morado-pastel: #d1c4e9;
+            --lila-fondo: #f0eef5;
+            --rojo-corazon: #d22027;
+            --texto-oscuro: #1a1a1a;
+            --blanco: #ffffff;
+            --gris-claro: #e5e5e5;
+            --verde-exito: #10b981;
+        }
+
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--lila-fondo);
+            color: var(--texto-oscuro);
+        }
+
+        header {
+            background-color: var(--blanco);
+            padding: 15px 5%;
+            display: flex;
+            align-items: center;
+            border-bottom: 4px solid var(--morado-vibrante);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .header-title { margin-left: 10px; }
+        .header-title h1 { color: var(--morado-oscuro); margin: 0; font-size: 1.4rem; font-weight: 800; }
+        .header-title p { margin: 2px 0 0 0; font-size: 0.85rem; color: gray; }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 15px 40px;
+        }
+
+        /* TABS NAVEGACIÓN */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--gris-claro);
+            padding-bottom: 10px;
+            overflow-x: auto;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            color: gray;
+            cursor: pointer;
+            padding: 10px 15px;
+            border-radius: 8px;
+            white-space: nowrap;
+            transition: all 0.2s;
+            touch-action: manipulation;
+        }
+        .tab-btn:hover { background: var(--lila-fondo); }
+        .tab-btn.active {
+            background: var(--morado-pastel);
+            color: var(--morado-oscuro);
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* LAYOUT POS */
+        .pos-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        @media (min-width: 768px) {
+            .pos-layout { flex-direction: row; }
+            .pos-search-col { flex: 3; }
+            .pos-cart-col { flex: 2; }
+            /* El sticky solo tiene sentido con dos columnas lado a lado.
+               En una sola columna (celular) se pelea con el teclado virtual
+               y el carrito salta o se corta. */
+            .cart-container { position: sticky; top: 20px; }
+        }
+
+        /* BUSCADOR Y RESULTADOS */
+        #pos-search {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px; /* nunca menos de 16px: si no, iOS hace zoom solo al tocar el campo */
+            border: 2px solid var(--gris-claro);
+            border-radius: 8px;
+            outline: none;
+            margin-bottom: 15px;
+            transition: border-color 0.3s;
+        }
+        #pos-search:focus { border-color: var(--morado-vibrante); }
+
+        #pos-results {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .result-item {
+            background: var(--blanco);
+            border: 1px solid var(--gris-claro);
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border-left: 4px solid var(--morado-vibrante);
+            touch-action: manipulation;
+        }
+        .result-item:hover, .result-item:active { background: var(--lila-fondo); }
+        .result-price { font-weight: bold; color: var(--rojo-corazon); font-size: 1.1rem; white-space: nowrap; margin-left: 10px; }
+
+        /* CARRITO */
+        .cart-container {
+            background: var(--blanco);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .cart-container h3 { margin-top: 0; color: var(--morado-oscuro); border-bottom: 2px solid var(--gris-claro); padding-bottom: 10px; }
+        .cart-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+        .cart-item {
+            background: var(--lila-fondo);
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .cart-item-info { width: 100%; margin-bottom: 10px; word-break: break-word; }
+        .cart-controls { display: flex; align-items: center; gap: 10px; }
+        .cart-controls button {
+            width: 40px; height: 40px;
+            background: var(--morado-pastel);
+            border: none; border-radius: 6px;
+            font-weight: bold; color: var(--morado-oscuro);
+            font-size: 1.1rem;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        .cart-subtotal { font-weight: bold; color: var(--texto-oscuro); }
+        .cart-total-row {
+            display: flex; justify-content: space-between;
+            font-size: 1.3rem; font-weight: bold; margin-bottom: 15px; color: var(--morado-oscuro);
+        }
+
+        .btn-success {
+            width: 100%; padding: 15px;
+            background: var(--verde-exito); color: white;
+            border: none; border-radius: 8px;
+            font-size: 1.1rem; font-weight: bold; cursor: pointer;
+            touch-action: manipulation;
+        }
+        .btn-success:disabled { background: gray; cursor: not-allowed; }
+
+        /* HISTORIAL DE VENTAS */
+        .venta-card {
+            background: var(--blanco);
+            border-left: 5px solid var(--morado-oscuro);
+            padding: 15px; margin-bottom: 15px;
+            border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .venta-header {
+            display: flex; justify-content: space-between; flex-wrap: wrap; gap: 5px;
+            margin-bottom: 10px; border-bottom: 1px solid var(--gris-claro); padding-bottom: 10px;
+        }
+        .venta-items { list-style: none; padding: 0; margin: 0; color: var(--texto-oscuro); }
+        .venta-items li { margin-bottom: 5px; }
+        .btn-borrar {
+            background: var(--rojo-corazon); color: white; border: none;
+            padding: 8px 15px; border-radius: 6px; cursor: pointer; margin-top: 10px;
+            touch-action: manipulation;
+        }
+
+        /* RESPALDO */
+        .respaldo-box {
+            background: white; padding: 18px; border-radius: 10px;
+            border: 1px solid var(--gris-claro); margin-bottom: 15px;
+        }
+        .respaldo-box h3 { margin-top: 0; color: var(--morado-oscuro); }
+        .btn-secundario {
+            background: var(--morado-vibrante); color: white; border: none;
+            padding: 12px 18px; border-radius: 8px; font-weight: bold; cursor: pointer;
+            font-size: 1rem; touch-action: manipulation;
+        }
+        .file-label {
+            display: inline-block; background: var(--lila-fondo); color: var(--morado-oscuro);
+            padding: 12px 18px; border-radius: 8px; font-weight: bold; cursor: pointer;
+            border: 2px dashed var(--morado-pastel); text-align: center;
+        }
+
+        /* TOASTS (reemplazan a los alert() que traban la pantalla) */
+        #toast-container {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; gap: 8px; z-index: 999;
+            width: min(92%, 420px); pointer-events: none;
+        }
+        .toast {
+            padding: 14px 18px; border-radius: 8px; color: white; font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            opacity: 0; transform: translateY(10px);
+            transition: opacity 0.25s, transform 0.25s;
+        }
+        .toast.mostrar { opacity: 1; transform: translateY(0); }
+        .toast.exito { background: var(--verde-exito); }
+        .toast.error { background: var(--rojo-corazon); }
+        .toast.info { background: var(--morado-oscuro); }
+    </style>
+</head>
+<body>
+
+    <noscript>
+        <div style="background:#d22027;color:white;padding:16px;text-align:center;font-weight:bold;">
+            ⚠️ Esta app no funciona sin JavaScript. Si la estás viendo dentro de una vista previa
+            (WhatsApp, Mail, o el visor de archivos de otra app), guarda el archivo y ábrelo directo
+            en Safari o Chrome.
+        </div>
+    </noscript>
+
+    <header>
+        <div class="header-title">
+            <h1>POS Emergencia - La Violeta</h1>
+            <p>Sistema de ventas offline para cortes de luz</p>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <div class="tabs">
+            <button class="tab-btn active" onclick="cambiarTab('venta', this)">🛒 Nueva Venta</button>
+            <button class="tab-btn" onclick="cambiarTab('historial', this)">📋 Ventas Pendientes (<span id="badge-ventas">0</span>)</button>
+            <button class="tab-btn" onclick="cambiarTab('inventario', this)">⚙️ Actualizar Inventario</button>
+            <button class="tab-btn" onclick="cambiarTab('respaldo', this)">💾 Respaldo</button>
+        </div>
+
+        <!-- PESTAÑA: NUEVA VENTA -->
+        <div id="tab-venta" class="tab-content active">
+            <div class="pos-layout">
+                <div class="pos-search-col">
+                    <input type="text" id="pos-search" placeholder="🔍 Escribe nombre, marca o escanea código (Enter)..." autocomplete="off">
+                    <div id="pos-results">
+                        <div style="text-align:center; padding:20px; color:gray;">Escribe para buscar un producto...</div>
+                    </div>
+                </div>
+                <div class="pos-cart-col">
+                    <div class="cart-container">
+                        <h3>🛒 Carrito de Compras</h3>
+                        <div id="cart-list" class="cart-list">
+                            <div style="text-align:center; color:gray; padding:10px;">El carrito está vacío</div>
+                        </div>
+                        <div class="cart-footer">
+                            <div class="cart-total-row">
+                                <span>Total:</span>
+                                <span id="cart-total">$0</span>
+                            </div>
+                            <button id="btn-guardar-venta" class="btn-success" onclick="guardarVenta()" disabled>
+                                💾 Guardar Venta Offline
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA: VENTAS PENDIENTES -->
+        <div id="tab-historial" class="tab-content">
+            <h2>Ventas esperando que vuelva la luz</h2>
+            <p style="color:gray;">Aquí quedan guardadas las ventas. Cuando regrese la luz, pásalas a tu computador principal y bórralas de esta lista.</p>
+            <div id="historial-list"></div>
+        </div>
+
+        <!-- PESTAÑA: CONFIGURACIÓN INVENTARIO -->
+        <div id="tab-inventario" class="tab-content">
+            <h2>Cargar Inventario masivo desde Excel</h2>
+            <div style="background: white; padding: 15px; border-radius:8px; margin-bottom:15px; border: 1px solid var(--gris-claro);">
+                <p>1. Selecciona y copia tu Excel completo de 10.000+ productos.</p>
+                <p>2. Pégalo en la caja de abajo y haz clic en procesar.</p>
+            </div>
+
+            <textarea id="paste-area" placeholder="Pega aquí los datos de tu Excel..." rows="8" style="width:100%; padding:10px; font-family:monospace; font-size:16px; margin-bottom:10px; border-radius:8px; border:2px solid var(--gris-claro);"></textarea>
+
+            <button class="btn-success" onclick="procesarPegado()" style="background:var(--morado-vibrante);">📥 Procesar y Guardar Inventario</button>
+
+            <p style="margin-top:20px; font-weight:bold; color:var(--morado-oscuro); font-size: 1.2rem;">
+                Productos guardados en memoria: <span id="inv-count" style="color: var(--rojo-corazon);">0</span>
+            </p>
+        </div>
+
+        <!-- PESTAÑA: RESPALDO -->
+        <div id="tab-respaldo" class="tab-content">
+            <h2>Respaldo de seguridad</h2>
+            <p style="color:gray;">Todo (inventario y ventas) se guarda solo en este celular/computador. Si se borra el navegador,
+                se queda sin espacio, o se usa "modo privado", los datos se pueden perder sin aviso. Descarga un respaldo
+                seguido -sobre todo después de un corte de luz largo con varias ventas guardadas.</p>
+
+            <div class="respaldo-box">
+                <h3>⬇️ Descargar respaldo</h3>
+                <p style="color:gray; margin-top:0;">Genera un archivo <code>.json</code> con el inventario y todas las ventas pendientes.</p>
+                <button class="btn-secundario" onclick="exportarRespaldo()">Descargar respaldo ahora</button>
+            </div>
+
+            <div class="respaldo-box">
+                <h3>⬆️ Restaurar respaldo</h3>
+                <p style="color:gray; margin-top:0;">Reemplaza los datos actuales por los del archivo de respaldo elegido.</p>
+                <label class="file-label" for="input-respaldo">📂 Elegir archivo de respaldo (.json)</label>
+                <input type="file" id="input-respaldo" accept="application/json" style="display:none" onchange="importarRespaldo(event)">
+            </div>
+        </div>
+
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script>
+        // Fármacos precargados de prueba basados en tu imagen
+        const productosPruebaIniciales = [
+            { codigo: "7800007810458", producto: "Freshmel Menta Fresca 5 Mg X 12 Comp Bucodispersables", precio: 3490 },
+            { codigo: "7800007810465", producto: "Freshmel Miel Limon X12 Comp (Clorhexidina)", precio: 3490 },
+            { codigo: "7804918402054", producto: "Claragine X16 Comp (Alantoina + Cetilpiridinio)", precio: 2490 },
+            { codigo: "7800063310862", producto: "Bucogerm Tos X10 Comp (Clorhexidina + Noscapina)", precio: 2500 },
+            { codigo: "7800060005754", producto: "AB Menta Fresca X12 Comp (Clorhexidina + Noscapina)", precio: 4990 },
+            { codigo: "7800060005723", producto: "AB Miel Limon X12 Comp (Clorehexidina)", precio: 4990 }
+        ];
+
+        let inventarioMemoria = [];
+        let carrito = [];
+        // Un toque en pantalla (celular) no debe reabrir el teclado solo;
+        // un mouse (PC/lector de código) sí se beneficia de mantener el foco.
+        const esTactil = window.matchMedia('(pointer: coarse)').matches;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            inicializarInventarioPorDefecto();
+            renderizarHistorial();
+            document.getElementById('pos-search').addEventListener('input', manejarBusqueda);
+
+            // Soporte para pistola lectora de código de barras (Enter)
+            document.getElementById('pos-search').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const term = this.value.trim().toLowerCase();
+                    const exactMatch = inventarioMemoria.find(i => i.codigo.toLowerCase() === term);
+                    if (exactMatch) {
+                        agregarAlCarrito(exactMatch);
+                        this.value = '';
+                        document.getElementById('pos-results').innerHTML = '';
+                    }
+                }
+            });
+        });
+
+        function escapeHtml(texto) {
+            const div = document.createElement('div');
+            div.textContent = String(texto ?? '');
+            return div.innerHTML;
+        }
+
+        function mostrarToast(mensaje, tipo) {
+            const contenedor = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + (tipo || 'info');
+            toast.textContent = mensaje;
+            contenedor.appendChild(toast);
+            requestAnimationFrame(() => toast.classList.add('mostrar'));
+            setTimeout(() => {
+                toast.classList.remove('mostrar');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+
+        function inicializarInventarioPorDefecto() {
+            let guardado = localStorage.getItem('violeta_inventario');
+            if (!guardado) {
+                // Si es la primera vez, cargamos los productos de prueba de la imagen
+                inventarioMemoria = productosPruebaIniciales;
+                localStorage.setItem('violeta_inventario', JSON.stringify(inventarioMemoria));
+            } else {
+                inventarioMemoria = JSON.parse(guardado);
+            }
+            document.getElementById('inv-count').innerText = inventarioMemoria.length.toLocaleString('es-CL');
+        }
+
+        function cambiarTab(tabId, elementoBtn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+            document.getElementById('tab-' + tabId).classList.add('active');
+            elementoBtn.classList.add('active');
+
+            if (tabId === 'venta' && !esTactil) document.getElementById('pos-search').focus();
+        }
+
+        function procesarPegado() {
+            const texto = document.getElementById('paste-area').value;
+            if (!texto.trim()) return mostrarToast('Pega los datos del Excel primero.', 'error');
+
+            const lineas = texto.split('\n');
+            let nuevoInventario = [];
+            let codeIdx = 0, nameIdx = 1, priceIdx = 3;
+            let startIndex = 0;
+
+            const headers = lineas[0].toLowerCase();
+            if (headers.includes('producto') || headers.includes('código') || headers.includes('código de barras')) {
+                startIndex = 1;
+                const hCols = lineas[0].split('\t').map(h => h.trim().toLowerCase());
+                const fCode = hCols.findIndex(h => h.includes('código') || h.includes('codigo'));
+                const fName = hCols.findIndex(h => h.includes('producto') || h.includes('descripción'));
+                const fPrice = hCols.findIndex(h => h === 'p. venta' || h.includes('venta') || h.includes('precio'));
+
+                if (fCode !== -1) codeIdx = fCode;
+                if (fName !== -1) nameIdx = fName;
+                if (fPrice !== -1) priceIdx = fPrice;
+            }
+
+            for (let i = startIndex; i < lineas.length; i++) {
+                if (!lineas[i].trim()) continue;
+                const cols = lineas[i].split('\t');
+
+                if (cols.length > Math.max(codeIdx, nameIdx)) {
+                    const codigo = cols[codeIdx] ? cols[codeIdx].trim() : '';
+                    const producto = cols[nameIdx] ? cols[nameIdx].trim() : '';
+                    const precioRaw = cols[priceIdx] ? cols[priceIdx].trim() : '0';
+                    const precio = parseInt(precioRaw.replace(/[^0-9]/g, '')) || 0;
+
+                    if (producto) {
+                        nuevoInventario.push({ codigo, producto, precio });
+                    }
+                }
+            }
+
+            if (nuevoInventario.length > 0) {
+                inventarioMemoria = nuevoInventario;
+                localStorage.setItem('violeta_inventario', JSON.stringify(inventarioMemoria));
+                document.getElementById('paste-area').value = '';
+                mostrarToast(`Se actualizaron ${nuevoInventario.length.toLocaleString('es-CL')} productos.`, 'exito');
+                document.getElementById('inv-count').innerText = inventarioMemoria.length.toLocaleString('es-CL');
+            } else {
+                mostrarToast('No se detectaron columnas válidas. Revisa el formato de copiado.', 'error');
+            }
+        }
+
+        function normalizar(texto) {
+            return texto.normalize("NFD").replace(new RegExp("[\\u0300-\\u036f]", "g"), "").toLowerCase();
+        }
+
+        function manejarBusqueda(e) {
+            const query = normalizar(e.target.value.trim());
+            const ul = document.getElementById('pos-results');
+
+            if (!query) {
+                ul.innerHTML = '<div style="text-align:center; padding:20px; color:gray;">Escribe para buscar un producto...</div>';
+                return;
+            }
+
+            const filtrados = inventarioMemoria.filter(p =>
+                normalizar(p.codigo).includes(query) ||
+                normalizar(p.producto).includes(query)
+            ).slice(0, 30);
+
+            ul.innerHTML = '';
+
+            if (filtrados.length === 0) {
+                ul.innerHTML = '<div style="text-align:center; padding:20px; color:gray;">No se encontraron productos.</div>';
+                return;
+            }
+
+            filtrados.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'result-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>${escapeHtml(p.producto)}</strong>
+                        <div style="font-size:0.85rem; color:gray;">Cód: ${escapeHtml(p.codigo)}</div>
+                    </div>
+                    <div class="result-price">$${p.precio.toLocaleString('es-CL')}</div>
+                `;
+                div.onclick = () => agregarAlCarrito(p);
+                ul.appendChild(div);
+            });
+        }
+
+        function agregarAlCarrito(producto) {
+            const item = carrito.find(i => i.codigo === producto.codigo && i.producto === producto.producto);
+            if (item) {
+                item.cantidad++;
+            } else {
+                carrito.push({ ...producto, cantidad: 1 });
+            }
+            renderizarCarrito();
+            document.getElementById('pos-search').value = '';
+            document.getElementById('pos-results').innerHTML = '';
+            // En celular, si el teclado se vuelve a abrir solo, tapa el carrito
+            // que recién se armó -por eso solo se re-enfoca con mouse/lector físico.
+            if (!esTactil) document.getElementById('pos-search').focus();
+        }
+
+        window.cambiarCantidad = function(index, delta) {
+            carrito[index].cantidad += delta;
+            if (carrito[index].cantidad <= 0) {
+                carrito.splice(index, 1);
+            }
+            renderizarCarrito();
+        }
+
+        function renderizarCarrito() {
+            const ul = document.getElementById('cart-list');
+            ul.innerHTML = '';
+            let total = 0;
+
+            if (carrito.length === 0) {
+                ul.innerHTML = '<div style="text-align:center; color:gray; padding:10px;">El carrito está vacío</div>';
+                document.getElementById('cart-total').innerText = '$0';
+                document.getElementById('btn-guardar-venta').disabled = true;
+                return;
+            }
+
+            carrito.forEach((item, index) => {
+                const subtotal = item.precio * item.cantidad;
+                total += subtotal;
+
+                ul.innerHTML += `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <strong>${escapeHtml(item.producto)}</strong>
+                            <br><small style="color:gray;">Cód: ${escapeHtml(item.codigo)} | $${item.precio.toLocaleString('es-CL')} c/u</small>
+                        </div>
+                        <div class="cart-controls">
+                            <button onclick="cambiarCantidad(${index}, -1)">-</button>
+                            <span style="font-weight:bold; width:20px; text-align:center;">${item.cantidad}</span>
+                            <button onclick="cambiarCantidad(${index}, 1)">+</button>
+                        </div>
+                        <div class="cart-subtotal">$${subtotal.toLocaleString('es-CL')}</div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('cart-total').innerText = '$' + total.toLocaleString('es-CL');
+            document.getElementById('btn-guardar-venta').disabled = false;
+        }
+
+        window.guardarVenta = function() {
+            if (carrito.length === 0) return;
+
+            const ventas = JSON.parse(localStorage.getItem('violeta_ventas') || '[]');
+            const total = carrito.reduce((sum, item) => sum + (item.precio * item.cantidad), 0);
+
+            const nuevaVenta = {
+                id: Date.now(),
+                fecha: new Date().toLocaleString('es-CL'),
+                items: carrito,
+                total: total
+            };
+
+            ventas.push(nuevaVenta);
+            localStorage.setItem('violeta_ventas', JSON.stringify(ventas));
+
+            carrito = [];
+            renderizarCarrito();
+            renderizarHistorial();
+            mostrarToast('Venta de emergencia guardada con éxito.', 'exito');
+        }
+
+        function renderizarHistorial() {
+            const ventas = JSON.parse(localStorage.getItem('violeta_ventas') || '[]');
+            const container = document.getElementById('historial-list');
+            document.getElementById('badge-ventas').innerText = ventas.length;
+
+            container.innerHTML = '';
+
+            if (ventas.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:gray; margin-top:30px;">No hay ventas pendientes por registrar.</p>';
+                return;
+            }
+
+            ventas.slice().reverse().forEach(venta => {
+                let itemsHtml = venta.items.map(i => `<li><b>${i.cantidad}x</b> ${escapeHtml(i.producto)} <span style="color:gray;">(Cód: ${escapeHtml(i.codigo)})</span></li>`).join('');
+
+                container.innerHTML += `
+                    <div class="venta-card">
+                        <div class="venta-header">
+                            <div>
+                                <h3 style="margin:0; color:var(--morado-oscuro);">Venta Offline</h3>
+                                <small style="color:gray;">${escapeHtml(venta.fecha)}</small>
+                            </div>
+                            <h2 style="margin:0; color:var(--rojo-corazon);">$${venta.total.toLocaleString('es-CL')}</h2>
+                        </div>
+                        <ul class="venta-items">
+                            ${itemsHtml}
+                        </ul>
+                        <div style="text-align:right;">
+                            <button class="btn-borrar" onclick="eliminarVenta(${venta.id})">✔ Marcar como Ingresada (Borrar)</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        window.eliminarVenta = function(id) {
+            if (confirm('¿Ya ingresaste esta venta al sistema principal? Se eliminará de la lista de respaldo.')) {
+                let ventas = JSON.parse(localStorage.getItem('violeta_ventas') || '[]');
+                ventas = ventas.filter(v => v.id !== id);
+                localStorage.setItem('violeta_ventas', JSON.stringify(ventas));
+                renderizarHistorial();
+            }
+        }
+
+        function exportarRespaldo() {
+            const respaldo = {
+                generado: new Date().toISOString(),
+                inventario: JSON.parse(localStorage.getItem('violeta_inventario') || '[]'),
+                ventas: JSON.parse(localStorage.getItem('violeta_ventas') || '[]')
+            };
+            const blob = new Blob([JSON.stringify(respaldo, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const fecha = new Date().toISOString().slice(0, 10);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `respaldo_violeta_${fecha}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            mostrarToast('Respaldo descargado.', 'exito');
+        }
+
+        function importarRespaldo(event) {
+            const archivo = event.target.files[0];
+            if (!archivo) return;
+
+            const lector = new FileReader();
+            lector.onload = () => {
+                try {
+                    const datos = JSON.parse(lector.result);
+                    if (!Array.isArray(datos.inventario) || !Array.isArray(datos.ventas)) {
+                        throw new Error('formato inválido');
+                    }
+                    if (!confirm(`Este respaldo tiene ${datos.inventario.length.toLocaleString('es-CL')} productos y ${datos.ventas.length} ventas pendientes. Esto reemplaza lo que hay guardado ahora. ¿Continuar?`)) {
+                        return;
+                    }
+                    localStorage.setItem('violeta_inventario', JSON.stringify(datos.inventario));
+                    localStorage.setItem('violeta_ventas', JSON.stringify(datos.ventas));
+                    inventarioMemoria = datos.inventario;
+                    document.getElementById('inv-count').innerText = inventarioMemoria.length.toLocaleString('es-CL');
+                    renderizarHistorial();
+                    mostrarToast('Respaldo restaurado con éxito.', 'exito');
+                } catch (err) {
+                    mostrarToast('El archivo no es un respaldo válido de este sistema.', 'error');
+                } finally {
+                    event.target.value = '';
+                }
+            };
+            lector.readAsText(archivo);
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>

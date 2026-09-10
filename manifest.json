@@ -1,0 +1,17 @@
+{
+  "name": "POS Emergencia - Farmacia La Violeta",
+  "short_name": "POS Violeta",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f0eef5",
+  "theme_color": "#4a148c",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
