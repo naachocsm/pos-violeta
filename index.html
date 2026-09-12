@@ -1467,8 +1467,22 @@
         }
 
         if ('serviceWorker' in navigator) {
+            // GitHub Pages sirve sw.js con Cache-Control: max-age=600: sin updateViaCache:'none',
+            // el navegador puede creer que sw.js "no cambió" por hasta 10 minutos y nunca
+            // detectar la actualización. Con esto siempre revisa la versión real del servidor.
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(() => {});
+                navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});
+            });
+
+            // Si ya había una versión controlando esta pestaña y se activó una nueva
+            // (actualización real, no la primera instalación), recargamos solos una vez
+            // para no depender de que el usuario recargue "a mano" varias veces.
+            const teniaControladorAlCargar = !!navigator.serviceWorker.controller;
+            let recargandoPorActualizacion = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!teniaControladorAlCargar || recargandoPorActualizacion) return;
+                recargandoPorActualizacion = true;
+                location.reload();
             });
         }
     </script>
