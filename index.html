@@ -326,6 +326,16 @@
         .tabla-inventario { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
         .tabla-inventario th { text-align: left; background: var(--lila-fondo); color: var(--morado-oscuro); padding: 10px; font-size: 0.85rem; white-space: nowrap; }
         .tabla-inventario td { padding: 10px; border-top: 1px solid var(--gris-claro); font-size: 0.9rem; vertical-align: middle; }
+        .dash-paginacion {
+            display: flex; align-items: center; justify-content: center; gap: 14px;
+            margin-top: 14px; flex-wrap: wrap; font-size: 0.9rem; color: #555;
+        }
+        .dash-paginacion button {
+            background: var(--blanco); border: 2px solid var(--gris-claro); color: var(--morado-oscuro);
+            padding: 8px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; touch-action: manipulation;
+        }
+        .dash-paginacion button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .dash-paginacion button:hover:not(:disabled) { background: var(--lila-fondo); }
         .badge-stock {
             padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.85rem;
             color: white; display: inline-block; min-width: 30px; text-align: center; cursor: pointer;
@@ -476,6 +486,7 @@
                     <tbody id="dash-tbody"></tbody>
                 </table>
             </div>
+            <div class="dash-paginacion" id="dash-paginacion"></div>
         </div>
 
         <!-- PESTAÑA: VENTAS PENDIENTES -->
@@ -593,6 +604,9 @@
         let carrito = [];
         let usuarioActual = null;
         let filasActuales = [];
+        let paginaInventario = 1;
+        let dashboardSucio = true;
+        const FILAS_POR_PAGINA = 50;
         // Un toque en pantalla (celular) no debe reabrir el teclado solo;
         // un mouse (PC/lector de código) sí se beneficia de mantener el foco.
         const esTactil = window.matchMedia('(pointer: coarse)').matches;
@@ -615,8 +629,8 @@
                 }
             });
 
-            document.getElementById('dash-search').addEventListener('input', filtrarYOrdenarDashboard);
-            document.getElementById('dash-orden').addEventListener('change', filtrarYOrdenarDashboard);
+            document.getElementById('dash-search').addEventListener('input', () => { paginaInventario = 1; filtrarYOrdenarDashboard(); });
+            document.getElementById('dash-orden').addEventListener('change', () => { paginaInventario = 1; filtrarYOrdenarDashboard(); });
             document.getElementById('login-pass').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') iniciarSesion();
             });
@@ -673,13 +687,13 @@
             db.collection('productos').onSnapshot(snap => {
                 inventarioMemoria = snap.docs.map(d => ({ codigo: d.id, ...d.data() }));
                 document.getElementById('inv-count').innerText = inventarioMemoria.length.toLocaleString('es-CL');
-                renderizarDashboard();
+                renderizarDashboardSiVisible();
             }, err => mostrarToast('Error leyendo inventario: ' + err.message, 'error'));
 
             const inicioMesTs = firebase.firestore.Timestamp.fromDate(inicioMes());
             db.collection('ventas').where('fecha', '>=', inicioMesTs).onSnapshot(snap => {
                 ventasDelMes = snap.docs.map(d => d.data());
-                renderizarDashboard();
+                renderizarDashboardSiVisible();
             }, err => mostrarToast('Error leyendo ventas: ' + err.message, 'error'));
 
             db.collection('ventas').orderBy('fecha', 'desc').limit(300).onSnapshot(snap => {
@@ -799,7 +813,17 @@
             `).join('');
         }
 
+        function renderizarDashboardSiVisible() {
+            const tab = document.getElementById('tab-dashboard');
+            if (tab && tab.classList.contains('active')) {
+                renderizarDashboard();
+            } else {
+                dashboardSucio = true;
+            }
+        }
+
         function renderizarDashboard() {
+            dashboardSucio = false;
             if (!document.getElementById('resumen-grid')) return;
             const semanaInicio = inicioSemana();
             const ventasSemana = ventasDelMes.filter(v => v.fecha && v.fecha.toDate && v.fecha.toDate() >= semanaInicio);
@@ -826,6 +850,7 @@
 
         function filtrarYOrdenarDashboard() {
             const tbody = document.getElementById('dash-tbody');
+            const paginacion = document.getElementById('dash-paginacion');
             if (!tbody) return;
 
             const termino = normalizar(document.getElementById('dash-search').value.trim());
@@ -839,31 +864,44 @@
                     No hay productos cargados todavía.<br><br>
                     <button class="btn-secundario" onclick="cargarProductosDeEjemplo()">Cargar 6 productos de ejemplo para probar</button>
                 </td></tr>`;
+                if (paginacion) paginacion.innerHTML = '';
                 return;
             }
 
             let filas = inventarioMemoria
-                .filter(p => !termino || normalizar(p.producto).includes(termino) || normalizar(p.codigo).includes(termino))
-                .map(p => ({
-                    ...p,
-                    vendidosSemana: unidadesVendidas(p.codigo, ventasSemana),
-                    vendidosMes: unidadesVendidas(p.codigo, ventasDelMes)
-                }));
+                .filter(p => !termino || normalizar(p.producto).includes(termino) || normalizar(p.codigo).includes(termino));
 
-            if (orden === 'stock-asc') filas.sort((a, b) => (a.stock || 0) - (b.stock || 0));
-            else if (orden === 'vendidos-mes') filas.sort((a, b) => b.vendidosMes - a.vendidosMes);
-            else filas.sort((a, b) => a.producto.localeCompare(b.producto, 'es'));
+            // Ordenar por vendidos-mes necesita ese número para las 10 mil filas antes de ordenar;
+            // los otros órdenes no, así que calculamos vendidos solo para la página visible (mucho más rápido).
+            if (orden === 'vendidos-mes') {
+                filas = filas.map(p => ({ ...p, vendidosMes: unidadesVendidas(p.codigo, ventasDelMes) }));
+                filas.sort((a, b) => b.vendidosMes - a.vendidosMes);
+            } else if (orden === 'stock-asc') {
+                filas.sort((a, b) => (a.stock || 0) - (b.stock || 0));
+            } else {
+                filas.sort((a, b) => a.producto.localeCompare(b.producto, 'es'));
+            }
 
             filasActuales = filas;
 
             if (filas.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:gray; padding:20px;">No se encontraron productos.</td></tr>`;
+                if (paginacion) paginacion.innerHTML = '';
                 return;
             }
 
-            tbody.innerHTML = filas.map((p, idx) => {
+            const totalPaginas = Math.max(1, Math.ceil(filas.length / FILAS_POR_PAGINA));
+            if (paginaInventario > totalPaginas) paginaInventario = totalPaginas;
+            if (paginaInventario < 1) paginaInventario = 1;
+            const inicio = (paginaInventario - 1) * FILAS_POR_PAGINA;
+            const paginaFilas = filas.slice(inicio, inicio + FILAS_POR_PAGINA);
+
+            tbody.innerHTML = paginaFilas.map((p, i) => {
+                const idx = inicio + i;
                 const stock = p.stock || 0;
                 const claseBadge = stock <= UMBRAL_CRITICO ? 'critico' : (stock <= UMBRAL_BAJO ? 'bajo' : 'ok');
+                const vendidosSemana = unidadesVendidas(p.codigo, ventasSemana);
+                const vendidosMes = p.vendidosMes !== undefined ? p.vendidosMes : unidadesVendidas(p.codigo, ventasDelMes);
                 return `
                 <tr>
                     <td><strong>${escapeHtml(p.producto)}</strong><br><small style="color:gray;">Cód: ${escapeHtml(p.codigo)}</small></td>
@@ -875,10 +913,25 @@
                             <button onclick="ajustarStock(${idx}, 1)">+</button>
                         </div>
                     </td>
-                    <td>${p.vendidosSemana.toLocaleString('es-CL')}</td>
-                    <td>${p.vendidosMes.toLocaleString('es-CL')}</td>
+                    <td>${vendidosSemana.toLocaleString('es-CL')}</td>
+                    <td>${vendidosMes.toLocaleString('es-CL')}</td>
                 </tr>`;
             }).join('');
+
+            if (paginacion) {
+                const desde = inicio + 1;
+                const hasta = Math.min(inicio + FILAS_POR_PAGINA, filas.length);
+                paginacion.innerHTML = `
+                    <button onclick="cambiarPaginaInventario(-1)" ${paginaInventario <= 1 ? 'disabled' : ''}>&larr; Anterior</button>
+                    <span>${desde}–${hasta} de ${filas.length.toLocaleString('es-CL')} · Página ${paginaInventario} de ${totalPaginas}</span>
+                    <button onclick="cambiarPaginaInventario(1)" ${paginaInventario >= totalPaginas ? 'disabled' : ''}>Siguiente &rarr;</button>
+                `;
+            }
+        }
+
+        function cambiarPaginaInventario(delta) {
+            paginaInventario += delta;
+            filtrarYOrdenarDashboard();
         }
 
         function ajustarStock(idx, delta) {
@@ -920,7 +973,10 @@
             elementoBtn.classList.add('active');
 
             if (tabId === 'venta' && !esTactil) document.getElementById('pos-search').focus();
-            if (tabId === 'dashboard') cargarTopVentas();
+            if (tabId === 'dashboard') {
+                cargarTopVentas();
+                if (dashboardSucio) renderizarDashboard();
+            }
         }
 
         async function procesarPegado() {
