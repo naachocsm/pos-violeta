@@ -133,6 +133,38 @@
             padding: 10px; font-size: 16px; border: 2px solid var(--gris-claro); border-radius: 8px;
         }
 
+        /* SELECT PERSONALIZADO (reemplaza visualmente al <select> nativo, que no se puede redondear) */
+        .select-lindo { position: relative; display: inline-block; }
+        .select-lindo-trigger {
+            display: flex; align-items: center; gap: 10px;
+            background: var(--blanco); border: 2px solid var(--gris-claro); color: var(--texto-oscuro);
+            padding: 10px 14px; border-radius: 12px; font-size: 16px; font-family: inherit;
+            cursor: pointer; touch-action: manipulation; white-space: nowrap;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .select-lindo-trigger:hover { border-color: var(--morado-pastel); }
+        .select-lindo.abierto .select-lindo-trigger {
+            border-color: var(--morado-vibrante);
+            box-shadow: 0 0 0 3px rgba(139,92,246,0.15);
+        }
+        .select-lindo-flecha { flex-shrink: 0; color: var(--morado-vibrante); transition: transform 0.2s; }
+        .select-lindo.abierto .select-lindo-flecha { transform: rotate(180deg); }
+        .select-lindo-panel {
+            position: absolute; top: calc(100% + 8px); left: 0; min-width: 100%; width: max-content; max-width: 280px;
+            background: var(--blanco); border: 1px solid var(--gris-claro); border-radius: 14px; padding: 6px;
+            box-shadow: 0 10px 30px rgba(74,20,140,0.18);
+            opacity: 0; transform: translateY(-6px) scale(0.98); pointer-events: none;
+            transition: opacity 0.15s, transform 0.15s;
+            max-height: 280px; overflow-y: auto; z-index: 50;
+        }
+        .select-lindo.abierto .select-lindo-panel { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+        .select-lindo-opcion {
+            padding: 10px 12px; border-radius: 9px; font-size: 0.95rem; color: var(--texto-oscuro);
+            cursor: pointer; white-space: nowrap; touch-action: manipulation; transition: background 0.12s;
+        }
+        .select-lindo-opcion:hover { background: var(--lila-fondo); }
+        .select-lindo-opcion.seleccionada { background: var(--morado-pastel); color: var(--morado-oscuro); font-weight: 700; }
+
         .pos-results-wrap { position: relative; }
         .pos-results-wrap::after {
             content: '';
@@ -635,6 +667,9 @@
                 if (e.key === 'Enter') iniciarSesion();
             });
 
+            crearSelectLindo('pos-orden');
+            crearSelectLindo('dash-orden');
+
             if (FIREBASE_SIN_CONFIGURAR) {
                 document.getElementById('login-box-form').style.display = 'none';
                 document.getElementById('config-faltante').style.display = 'block';
@@ -653,6 +688,75 @@
                 }
             });
         });
+
+        let selectsLindosGlobalesListos = false;
+
+        // Reemplaza visualmente un <select> nativo por un menú propio (redondeado, con la
+        // tipografía y los colores de la app) sin tocar la lógica existente: el <select>
+        // original queda oculto pero sigue recibiendo su value y su evento 'change' de siempre,
+        // así que manejarBusqueda()/filtrarYOrdenarDashboard() no se enteran del cambio.
+        function crearSelectLindo(id) {
+            const select = document.getElementById(id);
+            if (!select || select.dataset.lindoListo) return;
+            select.dataset.lindoListo = '1';
+            select.hidden = true;
+
+            const wrap = document.createElement('div');
+            wrap.className = 'select-lindo';
+
+            const trigger = document.createElement('button');
+            trigger.type = 'button';
+            trigger.className = 'select-lindo-trigger';
+            trigger.innerHTML = '<span class="select-lindo-valor"></span>' +
+                '<svg class="select-lindo-flecha" width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L6 6L11 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+            const panel = document.createElement('div');
+            panel.className = 'select-lindo-panel';
+
+            function actualizarVisual() {
+                const actual = select.options[select.selectedIndex];
+                trigger.querySelector('.select-lindo-valor').textContent = actual ? actual.textContent : '';
+                panel.querySelectorAll('.select-lindo-opcion').forEach(fila => {
+                    fila.classList.toggle('seleccionada', fila.dataset.value === select.value);
+                });
+            }
+
+            Array.from(select.options).forEach(opt => {
+                const fila = document.createElement('div');
+                fila.className = 'select-lindo-opcion';
+                fila.textContent = opt.textContent;
+                fila.dataset.value = opt.value;
+                fila.onclick = () => {
+                    select.value = opt.value;
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                    actualizarVisual();
+                    wrap.classList.remove('abierto');
+                };
+                panel.appendChild(fila);
+            });
+
+            trigger.onclick = (e) => {
+                e.stopPropagation();
+                const yaAbierto = wrap.classList.contains('abierto');
+                document.querySelectorAll('.select-lindo.abierto').forEach(el => el.classList.remove('abierto'));
+                if (!yaAbierto) wrap.classList.add('abierto');
+            };
+
+            if (!selectsLindosGlobalesListos) {
+                selectsLindosGlobalesListos = true;
+                document.addEventListener('click', () => {
+                    document.querySelectorAll('.select-lindo.abierto').forEach(el => el.classList.remove('abierto'));
+                });
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape') document.querySelectorAll('.select-lindo.abierto').forEach(el => el.classList.remove('abierto'));
+                });
+            }
+
+            wrap.appendChild(trigger);
+            wrap.appendChild(panel);
+            select.parentNode.insertBefore(wrap, select);
+            actualizarVisual();
+        }
 
         function actualizarEstadoConexion() {
             const online = navigator.onLine;
