@@ -8,7 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
-    <title>POS Emergencia | Farmacia La Violeta</title>
+    <title>POS Farmacia La Violeta</title>
     <style>
         :root {
             --morado-oscuro: #4a148c;
@@ -427,8 +427,8 @@
 
     <header>
         <div class="header-title">
-            <h1>POS Emergencia - La Violeta</h1>
-            <p>Sistema de ventas offline para cortes de luz</p>
+            <h1>POS Farmacia La Violeta</h1>
+            <p>Ventas e inventario</p>
         </div>
         <div class="header-right">
             <span class="estado-conexion"><span id="punto-conexion" class="punto online"></span><span id="texto-conexion">En línea</span></span>
@@ -454,10 +454,10 @@
                     <div class="pos-search-row">
                         <input type="text" id="pos-search" placeholder="🔍 Escribe nombre, marca o escanea código (Enter)..." autocomplete="off">
                         <select id="pos-orden">
-                            <option value="relevancia">Orden: Relevancia</option>
+                            <option value="relevancia">Relevancia</option>
                             <option value="nombre">Nombre (A-Z)</option>
-                            <option value="stock-desc">Stock: mayor a menor</option>
-                            <option value="stock-asc">Stock: menor a mayor</option>
+                            <option value="stock-desc">Mayor a menor</option>
+                            <option value="stock-asc">Menor a mayor</option>
                             <option value="vendidos-mes">Más vendidos del mes</option>
                         </select>
                     </div>
@@ -507,8 +507,8 @@
             <div class="dash-toolbar">
                 <input type="text" id="dash-search" placeholder="🔍 Buscar producto o código...">
                 <select id="dash-orden">
-                    <option value="nombre">Ordenar: Nombre (A-Z)</option>
-                    <option value="stock-asc">Stock: menor a mayor</option>
+                    <option value="nombre">Nombre (A-Z)</option>
+                    <option value="stock-asc">Menor a mayor</option>
                     <option value="vendidos-mes">Más vendidos del mes</option>
                 </select>
             </div>
