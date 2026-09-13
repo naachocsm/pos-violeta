@@ -533,13 +533,18 @@
         <div id="tab-inventario" class="tab-content">
             <h2>Cargar Inventario masivo desde Excel</h2>
             <div style="background: white; padding: 15px; border-radius:8px; margin-bottom:15px; border: 1px solid var(--gris-claro);">
-                <p>1. Selecciona y copia tu Excel completo de 10.000+ productos.</p>
-                <p>2. Pégalo en la caja de abajo y haz clic en procesar.</p>
-                <p>3. Si tu Excel tiene una columna de stock/existencias, también se guarda automáticamente.</p>
+                <p><strong>Opción A — subir el archivo directo:</strong> selecciona tu Excel (.xlsx/.xls/.csv) más abajo. El código detecta solo las columnas de Código, Producto, Precio y Existencia.</p>
+                <p><strong>Opción B — copiar y pegar:</strong> selecciona y copia las celdas de tu Excel, pégalas en la caja de texto y procesa.</p>
                 <p>¿Quieres editar el catálogo actual en Excel? Descárgalo primero en la pestaña "💾 Respaldo".</p>
             </div>
 
-            <textarea id="paste-area" placeholder="Pega aquí los datos de tu Excel..." rows="8" style="width:100%; padding:10px; font-family:monospace; font-size:16px; margin-bottom:10px; border-radius:8px; border:2px solid var(--gris-claro);"></textarea>
+            <div style="background: white; padding: 15px; border-radius:8px; margin-bottom:15px; border: 1px solid var(--gris-claro);">
+                <label class="file-label" for="file-inventario-excel">📄 Seleccionar archivo Excel</label>
+                <input type="file" id="file-inventario-excel" accept=".xlsx,.xls,.csv" style="display:none;" onchange="procesarExcelInventario(event)">
+                <span id="estado-excel-inventario" style="margin-left:10px; color:var(--morado-oscuro); font-weight:bold;"></span>
+            </div>
+
+            <textarea id="paste-area" placeholder="...o pega aquí los datos de tu Excel" rows="8" style="width:100%; padding:10px; font-family:monospace; font-size:16px; margin-bottom:10px; border-radius:8px; border:2px solid var(--gris-claro);"></textarea>
 
             <button class="btn-success" id="btn-procesar-inventario" onclick="procesarPegado()" style="background:var(--morado-vibrante);">📥 Procesar y Guardar Inventario</button>
 
@@ -582,6 +587,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         // ======================================================================
         // CONFIGURACIÓN DE FIREBASE (una sola vez, ~5 minutos, cuenta gratis)
@@ -1085,11 +1091,7 @@
             }
         }
 
-        async function procesarPegado() {
-            const texto = document.getElementById('paste-area').value;
-            if (!texto.trim()) return mostrarToast('Pega los datos del Excel primero.', 'error');
-            if (FIREBASE_SIN_CONFIGURAR) return mostrarToast('Falta configurar la base de datos compartida.', 'error');
-
+        function parsearFilasPegado(texto) {
             const lineas = texto.split('\n');
             let nuevoInventario = [];
             let saltados = 0;
@@ -1129,18 +1131,16 @@
                     }
                 }
             }
+            return { filas: nuevoInventario, saltados };
+        }
 
-            if (nuevoInventario.length === 0) {
-                return mostrarToast('No se detectaron columnas válidas. Revisa el formato de copiado.', 'error');
-            }
-
-            const btn = document.getElementById('btn-procesar-inventario');
-            const textoOriginalBtn = btn.innerText;
-            btn.disabled = true;
+        // Guarda filas {codigo,producto,precio,stock} en Firestore en lotes de 450.
+        // Común a "pegar texto" y "subir Excel": ambos terminan en la misma escritura real.
+        async function guardarInventarioEnLotes(filas, saltados, onProgreso) {
             const TAM_LOTE = 450;
             try {
-                for (let i = 0; i < nuevoInventario.length; i += TAM_LOTE) {
-                    const lote = nuevoInventario.slice(i, i + TAM_LOTE);
+                for (let i = 0; i < filas.length; i += TAM_LOTE) {
+                    const lote = filas.slice(i, i + TAM_LOTE);
                     const batch = db.batch();
                     lote.forEach(p => {
                         batch.set(db.collection('productos').doc(p.codigo), {
@@ -1148,16 +1148,99 @@
                         }, { merge: true });
                     });
                     await batch.commit();
-                    btn.innerText = `📥 Guardando... ${Math.min(i + TAM_LOTE, nuevoInventario.length)}/${nuevoInventario.length}`;
+                    if (onProgreso) onProgreso(Math.min(i + TAM_LOTE, filas.length), filas.length);
                 }
-                document.getElementById('paste-area').value = '';
-                mostrarToast(`Se guardaron ${nuevoInventario.length.toLocaleString('es-CL')} productos.` + (saltados > 0 ? ` (${saltados} sin código, no se importaron)` : ''), 'exito');
+                mostrarToast(`Se guardaron ${filas.length.toLocaleString('es-CL')} productos.` + (saltados > 0 ? ` (${saltados} sin código, no se importaron)` : ''), 'exito');
+                return true;
             } catch (err) {
                 mostrarToast('Error guardando el inventario: ' + err.message, 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerText = textoOriginalBtn;
+                return false;
             }
+        }
+
+        async function procesarPegado() {
+            const texto = document.getElementById('paste-area').value;
+            if (!texto.trim()) return mostrarToast('Pega los datos del Excel primero.', 'error');
+            if (FIREBASE_SIN_CONFIGURAR) return mostrarToast('Falta configurar la base de datos compartida.', 'error');
+
+            const { filas, saltados } = parsearFilasPegado(texto);
+            if (filas.length === 0) {
+                return mostrarToast('No se detectaron columnas válidas. Revisa el formato de copiado.', 'error');
+            }
+
+            const btn = document.getElementById('btn-procesar-inventario');
+            const textoOriginalBtn = btn.innerText;
+            btn.disabled = true;
+            const ok = await guardarInventarioEnLotes(filas, saltados, (hechos, total) => {
+                btn.innerText = `📥 Guardando... ${hechos}/${total}`;
+            });
+            if (ok) document.getElementById('paste-area').value = '';
+            btn.disabled = false;
+            btn.innerText = textoOriginalBtn;
+        }
+
+        // Misma detección de columnas por nombre que parsearFilasPegado, adaptada a filas
+        // ya parseadas por SheetJS (objetos {NombreColumna: valor}, no texto tabulado).
+        function mapearFilasExcel(filasExcel) {
+            let saltados = 0;
+            const filas = [];
+            filasExcel.forEach(fila => {
+                const claves = Object.keys(fila);
+                const claveCodigo = claves.find(k => k.toLowerCase().includes('código') || k.toLowerCase().includes('codigo')) || claves[0];
+                const claveProducto = claves.find(k => k.toLowerCase().includes('producto') || k.toLowerCase().includes('descrip')) || claves[1];
+                const clavePrecio = claves.find(k => k.toLowerCase().includes('venta') || k.toLowerCase().includes('precio')) || claves[3];
+                const claveStock = claves.find(k => k.toLowerCase().includes('existencia') || k.toLowerCase().includes('stock') || k.toLowerCase().includes('cantidad'));
+
+                const codigo = claveCodigo ? String(fila[claveCodigo] ?? '').trim() : '';
+                const producto = claveProducto ? String(fila[claveProducto] ?? '').trim() : '';
+                const precioRaw = clavePrecio ? String(fila[clavePrecio] ?? '0') : '0';
+                const precio = parseInt(precioRaw.replace(/[^0-9]/g, '')) || 0;
+                const stock = (claveStock && fila[claveStock] != null) ? (parseInt(String(fila[claveStock]).replace(/[^0-9]/g, '')) || 0) : 0;
+
+                if (producto && codigo) {
+                    filas.push({ codigo, producto, precio, stock });
+                } else if (producto && !codigo) {
+                    saltados++;
+                }
+            });
+            return { filas, saltados };
+        }
+
+        function procesarExcelInventario(event) {
+            const archivo = event.target.files[0];
+            if (!archivo) return;
+            if (FIREBASE_SIN_CONFIGURAR) {
+                event.target.value = '';
+                return mostrarToast('Falta configurar la base de datos compartida.', 'error');
+            }
+
+            const estado = document.getElementById('estado-excel-inventario');
+            const lector = new FileReader();
+            lector.onload = async function(e) {
+                let filas, saltados;
+                try {
+                    const datos = new Uint8Array(e.target.result);
+                    const libro = XLSX.read(datos, { type: 'array' });
+                    const hoja = libro.Sheets[libro.SheetNames[0]];
+                    ({ filas, saltados } = mapearFilasExcel(XLSX.utils.sheet_to_json(hoja)));
+                } catch (err) {
+                    event.target.value = '';
+                    return mostrarToast('No se pudo leer el archivo: ' + err.message, 'error');
+                }
+
+                if (filas.length === 0) {
+                    event.target.value = '';
+                    return mostrarToast('No se detectaron columnas válidas en el Excel.', 'error');
+                }
+
+                if (estado) estado.innerText = `📥 Guardando... 0/${filas.length}`;
+                await guardarInventarioEnLotes(filas, saltados, (hechos, total) => {
+                    if (estado) estado.innerText = `📥 Guardando... ${hechos}/${total}`;
+                });
+                if (estado) estado.innerText = '';
+                event.target.value = '';
+            };
+            lector.readAsArrayBuffer(archivo);
         }
 
         function normalizar(texto) {
