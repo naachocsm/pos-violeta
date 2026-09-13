@@ -792,12 +792,14 @@
                 inventarioMemoria = snap.docs.map(d => ({ codigo: d.id, ...d.data() }));
                 document.getElementById('inv-count').innerText = inventarioMemoria.length.toLocaleString('es-CL');
                 renderizarDashboardSiVisible();
+                manejarBusqueda();
             }, err => mostrarToast('Error leyendo inventario: ' + err.message, 'error'));
 
             const inicioMesTs = firebase.firestore.Timestamp.fromDate(inicioMes());
             db.collection('ventas').where('fecha', '>=', inicioMesTs).onSnapshot(snap => {
                 ventasDelMes = snap.docs.map(d => d.data());
                 renderizarDashboardSiVisible();
+                manejarBusqueda();
             }, err => mostrarToast('Error leyendo ventas: ' + err.message, 'error'));
 
             db.collection('ventas').orderBy('fecha', 'desc').limit(300).onSnapshot(snap => {
