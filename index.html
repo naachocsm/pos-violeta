@@ -345,6 +345,46 @@
         }
         .btn-modal-cancelar { background: #9e9e9e; color: white; }
 
+        .input-generico {
+            width: 100%; padding: 10px; font-size: 16px; border: 2px solid var(--gris-claro);
+            border-radius: 8px; box-sizing: border-box; outline: none;
+        }
+        .input-generico:focus { border-color: var(--morado-vibrante); }
+
+        /* CLIENTE VINCULADO A LA VENTA (pestaña Nueva Venta) */
+        .pos-cliente-bar {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            background: var(--lila-fondo); border: 1px solid var(--morado-pastel);
+            padding: 10px 12px; border-radius: 8px; margin-bottom: 12px;
+        }
+        .pos-cliente-bar > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .btn-cliente-agregar, .btn-cliente-quitar {
+            border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold; touch-action: manipulation;
+        }
+        .btn-cliente-agregar { background: var(--morado-vibrante); color: white; padding: 6px 12px; }
+        .btn-cliente-quitar { background: var(--rojo-corazon); color: white; padding: 6px 10px; }
+
+        /* FIDELIZACIÓN / CLIENTES */
+        .fid-layout { display: flex; gap: 0; min-height: 60vh; }
+        .fid-sidebar {
+            width: 320px; flex-shrink: 0; background: var(--blanco);
+            border-right: 4px solid var(--morado-vibrante); display: flex; flex-direction: column;
+            padding: 20px; box-sizing: border-box; border-radius: 12px 0 0 12px;
+        }
+        .lista-clientes { flex-grow: 1; overflow-y: auto; border-top: 1px solid var(--gris-claro); margin-top: 10px; }
+        .cliente-item { padding: 12px; border-bottom: 1px solid var(--gris-claro); cursor: pointer; border-left: 4px solid transparent; touch-action: manipulation; }
+        .cliente-item:hover { background-color: var(--lila-fondo); border-left-color: var(--morado-vibrante); }
+        .fid-main { flex-grow: 1; padding: 25px; overflow-y: auto; background: var(--blanco); border-radius: 0 12px 12px 0; }
+        .fid-card { background: var(--lila-fondo); padding: 18px; border-radius: 10px; margin-bottom: 18px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .form-grid input { grid-column: span 1; }
+        @media (max-width: 768px) {
+            .fid-layout { flex-direction: column; }
+            .fid-sidebar { width: 100%; border-right: none; border-bottom: 4px solid var(--morado-vibrante); border-radius: 12px 12px 0 0; }
+            .fid-main { border-radius: 0 0 12px 12px; }
+            .form-grid { grid-template-columns: 1fr; }
+        }
+
         /* RESPALDO */
         .respaldo-box {
             background: white; padding: 18px; border-radius: 10px;
@@ -511,6 +551,7 @@
             <button class="tab-btn" onclick="cambiarTab('historialHoy', this)">📅 Historial Hoy</button>
             <button class="tab-btn" onclick="cambiarTab('dashboard', this)">📊 Inventario</button>
             <button class="tab-btn" onclick="cambiarTab('historial', this)">📋 Ventas Pendientes <span id="badge-ventas" class="tab-badge" style="display:none;">0</span></button>
+            <button class="tab-btn" onclick="cambiarTab('clientes', this)">👥 Clientes</button>
             <button class="tab-btn" onclick="cambiarTab('inventario', this)">⚙️ Actualizar Inventario</button>
             <button class="tab-btn" onclick="cambiarTab('respaldo', this)">💾 Respaldo</button>
         </div>
@@ -538,6 +579,13 @@
                 <div class="pos-cart-col">
                     <div class="cart-container">
                         <h3>🛒 Carrito de Compras</h3>
+                        <div class="pos-cliente-bar">
+                            <span>👤 <strong id="pos-cliente-nombre" style="color:gray;">Venta Anónima</strong></span>
+                            <div>
+                                <button type="button" class="btn-cliente-agregar" onclick="abrirModalVincularCliente()">+ Cliente</button>
+                                <button type="button" id="btn-quitar-cliente" class="btn-cliente-quitar oculto" onclick="quitarClienteVinculado()">✖</button>
+                            </div>
+                        </div>
                         <div id="cart-list" class="cart-list">
                             <div style="text-align:center; color:gray; padding:10px;">El carrito está vacío</div>
                         </div>
@@ -579,6 +627,16 @@
                     <button type="button" class="btn-modal-cancelar" onclick="cerrarModalPago()">Cancelar</button>
                     <button type="button" id="btn-confirmar-pago" class="btn-concretar" onclick="confirmarPago()" disabled>✅ Confirmar Pago</button>
                 </div>
+            </div>
+        </div>
+
+        <!-- MODAL: VINCULAR CLIENTE A LA VENTA -->
+        <div id="modal-cliente-pos" class="modal-overlay">
+            <div class="modal-box" style="display:flex; flex-direction:column; max-height:80vh;">
+                <h3>Vincular Cliente a la Venta</h3>
+                <input type="text" id="buscador-cliente-pos" class="input-generico" placeholder="🔍 Buscar por RUT o nombre..." oninput="buscarClientePOS()">
+                <div id="lista-clientes-pos" style="flex-grow:1; overflow-y:auto; margin-top:10px; border-top:1px solid var(--gris-claro); padding-top:10px;"></div>
+                <button type="button" class="btn-modal-cancelar" style="margin-top:15px;" onclick="cerrarModalClientePOS()">Volver al Carrito</button>
             </div>
         </div>
 
@@ -634,6 +692,44 @@
             <p style="color:gray;">El stock y las estadísticas ya se descuentan solos apenas se guarda una venta, en todos los dispositivos.
                 Esta lista es solo para que no se te olvide ingresar la venta donde corresponda (contabilidad, otro sistema, etc.).</p>
             <div id="historial-list"></div>
+        </div>
+
+        <!-- PESTAÑA: CLIENTES (Fidelización) -->
+        <div id="tab-clientes" class="tab-content">
+            <div class="fid-layout">
+                <div class="fid-sidebar">
+                    <h2 style="color:var(--morado-oscuro); margin:0 0 5px 0; font-size:1.2rem;">👥 Clientes</h2>
+                    <input type="text" id="buscar-cliente" class="input-generico" placeholder="Buscar por RUT o nombre..." style="margin:15px 0;">
+                    <button class="btn-secundario" onclick="mostrarFormularioNuevoCliente()">+ Registrar Nuevo Cliente</button>
+                    <div class="lista-clientes" id="lista-clientes"></div>
+                </div>
+                <div class="fid-main">
+                    <div id="vista-form-cliente" class="fid-card oculto">
+                        <h2 style="color:var(--morado-oscuro); margin-top:0;">Registro de Cliente</h2>
+                        <div class="form-grid">
+                            <input type="text" id="reg-rut" class="input-generico" placeholder="RUT (ej: 19123456-7)">
+                            <input type="text" id="reg-nombre" class="input-generico" placeholder="Nombres">
+                            <input type="text" id="reg-apellido" class="input-generico" placeholder="Apellidos">
+                            <input type="text" id="reg-telefono" class="input-generico" placeholder="Teléfono">
+                            <input type="text" id="reg-direccion" class="input-generico" placeholder="Dirección" style="grid-column:span 2;">
+                        </div>
+                        <button class="btn-secundario" style="margin-top:20px;" onclick="guardarCliente()">Guardar Cliente</button>
+                    </div>
+                    <div id="vista-perfil-cliente" class="oculto">
+                        <div class="fid-card">
+                            <h2 id="perfil-nombre" style="color:var(--morado-oscuro); margin-top:0;">Nombre</h2>
+                            <p style="margin:5px 0; color:#555;"><strong>RUT:</strong> <span id="perfil-rut"></span></p>
+                        </div>
+                        <div class="fid-card">
+                            <h3 style="margin-top:0; color:var(--morado-oscuro);">Historial de Compras</h3>
+                            <div id="historial-compras-cliente"></div>
+                        </div>
+                    </div>
+                    <div id="vista-inicio-clientes" style="text-align:center; color:gray; margin-top:50px;">
+                        <h2>Selecciona o registra un cliente</h2>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- PESTAÑA: CONFIGURACIÓN INVENTARIO -->
@@ -755,7 +851,8 @@
         const FILAS_POR_PAGINA = 50;
         let metodoPagoSeleccionado = '';
         let totalPagoActual = 0;
-        let clienteVinculadoActual = null; // {rut, nombre} — lo llena la pestaña Clientes (próxima etapa)
+        let clienteVinculadoActual = null; // {rut, nombre} — rut es el RUT ya normalizado (id del doc en "clientes")
+        let clientesMemoria = [];
         // Un toque en pantalla (celular) no debe reabrir el teclado solo;
         // un mouse (PC/lector de código) sí se beneficia de mantener el foco.
         const esTactil = window.matchMedia('(pointer: coarse)').matches;
@@ -786,6 +883,7 @@
 
             crearSelectLindo('pos-orden');
             crearSelectLindo('dash-orden');
+            document.getElementById('buscar-cliente').addEventListener('input', renderizarListaClientes);
 
             if (FIREBASE_SIN_CONFIGURAR) {
                 document.getElementById('login-box-form').style.display = 'none';
@@ -924,6 +1022,11 @@
                 ventasRecientes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderizarHistorial();
             }, err => mostrarToast('Error leyendo historial: ' + err.message, 'error'));
+
+            db.collection('clientes').onSnapshot(snap => {
+                clientesMemoria = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderizarListaClientes();
+            }, err => mostrarToast('Error leyendo clientes: ' + err.message, 'error'));
 
             cargarTopVentas();
         }
@@ -1542,7 +1645,7 @@
             if (datosPago.estadoPago === 'pagada') mostrarUltimaVenta(total, datosPago);
 
             carrito = [];
-            clienteVinculadoActual = null;
+            quitarClienteVinculado();
             renderizarCarrito();
             mostrarToast('Venta guardada. Si no hay conexión, se sincroniza sola apenas vuelva.', 'exito');
         }
@@ -1688,6 +1791,165 @@
 
             totalSpan.innerText = '$' + totalDia.toLocaleString('es-CL');
             pendienteDiv.innerText = pendienteCobro > 0 ? `Pendiente de cobro: $${pendienteCobro.toLocaleString('es-CL')}` : '';
+        }
+
+        // ============================================================
+        // CLIENTES / FIDELIZACIÓN
+        // ============================================================
+        function normalizarRut(rut) {
+            return String(rut || '').replace(/[^0-9kK]/g, '').toUpperCase();
+        }
+
+        function clienteCoincide(c, termino) {
+            if (!termino) return true;
+            const terminoNorm = normalizar(termino);
+            const terminoRut = normalizarRut(termino);
+            return normalizar(c.nombre || '').includes(terminoNorm) ||
+                normalizar(c.apellido || '').includes(terminoNorm) ||
+                (!!terminoRut && !!c.id && c.id.includes(terminoRut));
+        }
+
+        function guardarCliente() {
+            const rutInput = document.getElementById('reg-rut').value.trim();
+            const nombre = document.getElementById('reg-nombre').value.trim();
+            const apellido = document.getElementById('reg-apellido').value.trim();
+            const telefono = document.getElementById('reg-telefono').value.trim();
+            const direccion = document.getElementById('reg-direccion').value.trim();
+
+            if (!rutInput || !nombre) return mostrarToast('RUT y nombre son obligatorios.', 'error');
+            const rutId = normalizarRut(rutInput);
+            if (!rutId) return mostrarToast('El RUT no es válido.', 'error');
+            if (clientesMemoria.some(c => c.id === rutId)) return mostrarToast('Ya existe un cliente con ese RUT.', 'error');
+
+            db.collection('clientes').doc(rutId).set({
+                rut: rutInput, nombre, apellido, telefono, direccion,
+                puntos: 0, creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                mostrarToast('Cliente registrado.', 'exito');
+                verPerfilCliente(rutId);
+            }).catch(err => mostrarToast('No se pudo registrar: ' + err.message, 'error'));
+        }
+
+        function mostrarFormularioNuevoCliente() {
+            document.getElementById('vista-inicio-clientes').classList.add('oculto');
+            document.getElementById('vista-perfil-cliente').classList.add('oculto');
+            document.getElementById('vista-form-cliente').classList.remove('oculto');
+            ['reg-rut', 'reg-nombre', 'reg-apellido', 'reg-telefono', 'reg-direccion'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+        }
+
+        function renderizarListaClientes() {
+            const cont = document.getElementById('lista-clientes');
+            if (!cont) return;
+            const termino = document.getElementById('buscar-cliente').value.trim();
+            const filtrados = clientesMemoria.filter(c => clienteCoincide(c, termino));
+
+            if (filtrados.length === 0) {
+                cont.innerHTML = '<p style="text-align:center; color:gray; padding:15px;">' +
+                    (termino ? 'Sin clientes que coincidan.' : 'Sin clientes registrados todavía.') + '</p>';
+                return;
+            }
+            cont.innerHTML = filtrados.map(c => `
+                <div class="cliente-item" onclick="verPerfilCliente('${c.id}')">
+                    <strong>${escapeHtml(c.nombre)} ${escapeHtml(c.apellido || '')}</strong><br>
+                    <small>${escapeHtml(c.rut)} · ⭐ ${c.puntos || 0} pts</small>
+                </div>
+            `).join('');
+        }
+
+        async function verPerfilCliente(rutId) {
+            const cliente = clientesMemoria.find(c => c.id === rutId);
+            if (!cliente) return;
+            document.getElementById('vista-inicio-clientes').classList.add('oculto');
+            document.getElementById('vista-form-cliente').classList.add('oculto');
+            document.getElementById('vista-perfil-cliente').classList.remove('oculto');
+
+            document.getElementById('perfil-nombre').innerHTML =
+                `${escapeHtml(cliente.nombre)} ${escapeHtml(cliente.apellido || '')} <span style="color:var(--naranja-alerta); font-size:0.9rem;">⭐ ${cliente.puntos || 0} pts</span>`;
+            document.getElementById('perfil-rut').innerText = cliente.rut;
+
+            const cont = document.getElementById('historial-compras-cliente');
+            cont.innerHTML = '<p style="color:gray;">Cargando historial...</p>';
+            try {
+                const snap = await db.collection('ventas').where('clienteRut', '==', rutId).orderBy('fecha', 'desc').limit(50).get();
+                renderizarHistorialCompras(snap.docs.map(d => d.data()));
+            } catch (err) {
+                cont.innerHTML = `<p style="color:var(--rojo-corazon);">No se pudo cargar el historial: ${escapeHtml(err.message)}</p>`;
+            }
+        }
+
+        function renderizarHistorialCompras(ventasCliente) {
+            const cont = document.getElementById('historial-compras-cliente');
+            if (ventasCliente.length === 0) {
+                cont.innerHTML = '<p style="color:gray;">Sin compras registradas todavía.</p>';
+                return;
+            }
+            cont.innerHTML = ventasCliente.map(v => {
+                const fecha = v.fecha && v.fecha.toDate ? v.fecha.toDate().toLocaleString('es-CL') : 'Sincronizando...';
+                const detalle = (v.items || []).map(i => `${i.cantidad}x ${i.producto}`).join(', ');
+                return `<div style="padding:10px 0; border-bottom:1px solid var(--gris-claro);">
+                    <small style="color:gray;">${escapeHtml(fecha)}</small><br>
+                    ${escapeHtml(detalle)}<br>
+                    <strong style="color:var(--rojo-corazon);">$${(v.total || 0).toLocaleString('es-CL')}</strong>
+                </div>`;
+            }).join('');
+        }
+
+        // --- Vincular un cliente a la venta actual, desde la pestaña Nueva Venta ---
+        function abrirModalVincularCliente() {
+            document.getElementById('buscador-cliente-pos').value = '';
+            buscarClientePOS();
+            document.getElementById('modal-cliente-pos').classList.add('visible');
+        }
+
+        function cerrarModalClientePOS() {
+            document.getElementById('modal-cliente-pos').classList.remove('visible');
+        }
+
+        function buscarClientePOS() {
+            const termino = document.getElementById('buscador-cliente-pos').value.trim();
+            const cont = document.getElementById('lista-clientes-pos');
+            const filtrados = clientesMemoria.filter(c => clienteCoincide(c, termino));
+
+            if (filtrados.length === 0) {
+                cont.innerHTML = '<p style="text-align:center; color:gray; padding:10px;">' +
+                    (termino ? 'Sin clientes que coincidan.' : 'Sin clientes registrados todavía.') + '</p>';
+                return;
+            }
+            cont.innerHTML = filtrados.map(c => `
+                <div class="cliente-item" onclick="seleccionarClientePOS('${c.id}')">
+                    <strong>${escapeHtml(c.nombre)} ${escapeHtml(c.apellido || '')}</strong> <span style="color:var(--naranja-alerta); font-size:0.8rem;">(⭐ ${c.puntos || 0})</span><br>
+                    <small>${escapeHtml(c.rut)}</small>
+                </div>
+            `).join('');
+        }
+
+        function seleccionarClientePOS(rutId) {
+            const cliente = clientesMemoria.find(c => c.id === rutId);
+            if (!cliente) return;
+            clienteVinculadoActual = { rut: cliente.id, nombre: `${cliente.nombre} ${cliente.apellido || ''}`.trim() };
+            actualizarBarraCliente();
+            cerrarModalClientePOS();
+        }
+
+        function quitarClienteVinculado() {
+            clienteVinculadoActual = null;
+            actualizarBarraCliente();
+        }
+
+        function actualizarBarraCliente() {
+            const nombreEl = document.getElementById('pos-cliente-nombre');
+            const btnQuitar = document.getElementById('btn-quitar-cliente');
+            if (clienteVinculadoActual) {
+                nombreEl.innerText = clienteVinculadoActual.nombre;
+                nombreEl.style.color = 'var(--morado-oscuro)';
+                btnQuitar.classList.remove('oculto');
+            } else {
+                nombreEl.innerText = 'Venta Anónima';
+                nombreEl.style.color = 'gray';
+                btnQuitar.classList.add('oculto');
+            }
         }
 
         function renderizarHistorial() {
