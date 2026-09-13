@@ -385,6 +385,39 @@
             .form-grid { grid-template-columns: 1fr; }
         }
 
+        /* VADEMÉCUM */
+        .filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
+        .btn-filtro {
+            background-color: var(--lila-fondo); border: none; color: var(--texto-oscuro);
+            padding: 8px 14px; border-radius: 20px; cursor: pointer; font-size: 0.9rem; font-weight: 600;
+            touch-action: manipulation;
+        }
+        .btn-filtro.activo { background-color: var(--morado-vibrante); color: var(--blanco); }
+        .farmaco-card {
+            background-color: var(--blanco); border-left: 5px solid var(--morado-vibrante);
+            border-radius: 8px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            overflow: hidden; cursor: pointer;
+        }
+        .farmaco-header { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; gap: 10px; }
+        .titulo-grupo { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+        .farmaco-header h2 { margin: 0; color: var(--texto-oscuro); font-size: 1.1rem; }
+        .tag-grupo {
+            background-color: var(--morado-pastel); color: var(--morado-oscuro); padding: 4px 10px;
+            border-radius: 15px; font-size: 0.75rem; font-weight: bold; display: inline-block; align-self: flex-start;
+        }
+        .flecha { font-size: 1.2rem; color: var(--morado-vibrante); transition: transform 0.3s ease; flex-shrink: 0; }
+        .farmaco-card.abierto .flecha { transform: rotate(180deg); }
+        .info-grid {
+            display: none; grid-template-columns: 1fr; gap: 12px; padding: 0 15px 15px 15px;
+            border-top: 1px solid var(--gris-claro); margin-top: 10px; padding-top: 12px; cursor: default;
+        }
+        @media (min-width: 768px) { .info-grid { grid-template-columns: 1fr 1fr; } }
+        .farmaco-card.abierto .info-grid { display: grid; }
+        .info-box { background-color: var(--lila-fondo); padding: 12px; border-radius: 6px; border: 1px solid var(--morado-pastel); }
+        .info-box h3 { margin: 0 0 5px 0; font-size: 0.85rem; color: var(--morado-oscuro); text-transform: uppercase; }
+        .info-box p { margin: 0; font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap; }
+        .warning-text { color: var(--rojo-corazon); }
+
         /* RESPALDO */
         .respaldo-box {
             background: white; padding: 18px; border-radius: 10px;
@@ -552,6 +585,7 @@
             <button class="tab-btn" onclick="cambiarTab('dashboard', this)">📊 Inventario</button>
             <button class="tab-btn" onclick="cambiarTab('historial', this)">📋 Ventas Pendientes <span id="badge-ventas" class="tab-badge" style="display:none;">0</span></button>
             <button class="tab-btn" onclick="cambiarTab('clientes', this)">👥 Clientes</button>
+            <button class="tab-btn" onclick="cambiarTab('vademecum', this)">💊 Vademécum</button>
             <button class="tab-btn" onclick="cambiarTab('inventario', this)">⚙️ Actualizar Inventario</button>
             <button class="tab-btn" onclick="cambiarTab('respaldo', this)">💾 Respaldo</button>
         </div>
@@ -732,6 +766,22 @@
             </div>
         </div>
 
+        <!-- PESTAÑA: VADEMÉCUM -->
+        <div id="tab-vademecum" class="tab-content">
+            <div style="background:white; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid var(--gris-claro);">
+                <h3 style="color:var(--morado-oscuro); margin-top:0;">Cargar Vademécum</h3>
+                <p style="font-size:0.9rem; color:gray;">Sube un Excel con columnas "Principio Activo", "Categoría / Filtro", "Grupo Farmacológico", "Mecanismo de Acción", "Indicaciones", "Posología", "Precauciones / Advertencias" y "Nombres Comerciales".</p>
+                <label class="file-label" for="file-vademecum-excel">📄 Seleccionar archivo Excel</label>
+                <input type="file" id="file-vademecum-excel" accept=".xlsx,.xls,.csv" style="display:none;" onchange="procesarExcelVademecum(event)">
+                <span id="estado-excel-vademecum" style="margin-left:10px; color:var(--morado-oscuro); font-weight:bold;"></span>
+            </div>
+            <input type="text" id="buscador-vademecum" class="input-generico" placeholder="🔍 Buscar por principio activo, nombre comercial o indicación..." style="margin-bottom:15px;">
+            <div class="filtros" id="contenedor-filtros"></div>
+            <div id="resultados-vademecum">
+                <div style="text-align:center; padding:15px; color:gray;">Aún no se ha cargado el Vademécum.</div>
+            </div>
+        </div>
+
         <!-- PESTAÑA: CONFIGURACIÓN INVENTARIO -->
         <div id="tab-inventario" class="tab-content">
             <h2>Cargar Inventario masivo desde Excel</h2>
@@ -853,6 +903,8 @@
         let totalPagoActual = 0;
         let clienteVinculadoActual = null; // {rut, nombre} — rut es el RUT ya normalizado (id del doc en "clientes")
         let clientesMemoria = [];
+        let vademecumMemoria = [];
+        let filtroVademecumActivo = 'Todos';
         // Un toque en pantalla (celular) no debe reabrir el teclado solo;
         // un mouse (PC/lector de código) sí se beneficia de mantener el foco.
         const esTactil = window.matchMedia('(pointer: coarse)').matches;
@@ -884,6 +936,7 @@
             crearSelectLindo('pos-orden');
             crearSelectLindo('dash-orden');
             document.getElementById('buscar-cliente').addEventListener('input', renderizarListaClientes);
+            document.getElementById('buscador-vademecum').addEventListener('input', aplicarFiltrosBusquedaVademecum);
 
             if (FIREBASE_SIN_CONFIGURAR) {
                 document.getElementById('login-box-form').style.display = 'none';
@@ -1027,6 +1080,12 @@
                 clientesMemoria = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderizarListaClientes();
             }, err => mostrarToast('Error leyendo clientes: ' + err.message, 'error'));
+
+            db.collection('vademecum').onSnapshot(snap => {
+                vademecumMemoria = snap.docs.map(d => d.data());
+                generarFiltrosVademecum();
+                aplicarFiltrosBusquedaVademecum();
+            }, err => mostrarToast('Error leyendo vademécum: ' + err.message, 'error'));
 
             cargarTopVentas();
         }
@@ -1950,6 +2009,176 @@
                 nombreEl.style.color = 'gray';
                 btnQuitar.classList.add('oculto');
             }
+        }
+
+        // ============================================================
+        // VADEMÉCUM
+        // ============================================================
+        // Igual detección de columnas por nombre que mapearFilasExcel, pero para las
+        // columnas del vademécum. Sin principio activo no hay ID posible, se salta.
+        function mapearFilasVademecum(filasExcel) {
+            let saltados = 0;
+            const filas = [];
+            filasExcel.forEach(row => {
+                const principioActivo = String(row['Principio Activo'] ?? '').trim();
+                const slug = normalizar(principioActivo).trim().replace(/\s+/g, '-');
+                if (!principioActivo || !slug) { saltados++; return; }
+                filas.push({
+                    id: slug,
+                    principioActivo,
+                    categoriaFiltro: String(row['Categoría / Filtro'] ?? 'Otros').trim() || 'Otros',
+                    grupo: String(row['Grupo Farmacológico'] ?? '-').trim() || '-',
+                    accion: String(row['Mecanismo de Acción'] ?? '-').trim() || '-',
+                    indicaciones: String(row['Indicaciones'] ?? '-').trim() || '-',
+                    posologia: String(row['Posología'] ?? '-').trim() || '-',
+                    precauciones: String(row['Precauciones / Advertencias'] ?? '-').trim() || '-',
+                    comercial: String(row['Nombres Comerciales'] ?? '-').trim() || '-'
+                });
+            });
+            return { filas, saltados };
+        }
+
+        // Guarda fármacos en Firestore en lotes de 450 (mismo patrón que guardarInventarioEnLotes).
+        async function guardarVademecumEnLotes(filas, saltados, onProgreso) {
+            const TAM_LOTE = 450;
+            try {
+                for (let i = 0; i < filas.length; i += TAM_LOTE) {
+                    const lote = filas.slice(i, i + TAM_LOTE);
+                    const batch = db.batch();
+                    lote.forEach(f => {
+                        batch.set(db.collection('vademecum').doc(f.id), {
+                            principioActivo: f.principioActivo, categoriaFiltro: f.categoriaFiltro, grupo: f.grupo,
+                            accion: f.accion, indicaciones: f.indicaciones, posologia: f.posologia,
+                            precauciones: f.precauciones, comercial: f.comercial
+                        }, { merge: true });
+                    });
+                    await batch.commit();
+                    if (onProgreso) onProgreso(Math.min(i + TAM_LOTE, filas.length), filas.length);
+                }
+                mostrarToast(`Se guardaron ${filas.length.toLocaleString('es-CL')} fármacos.` + (saltados > 0 ? ` (${saltados} sin principio activo, no se importaron)` : ''), 'exito');
+                return true;
+            } catch (err) {
+                mostrarToast('Error guardando el vademécum: ' + err.message, 'error');
+                return false;
+            }
+        }
+
+        function procesarExcelVademecum(event) {
+            const archivo = event.target.files[0];
+            if (!archivo) return;
+            if (FIREBASE_SIN_CONFIGURAR) {
+                event.target.value = '';
+                return mostrarToast('Falta configurar la base de datos compartida.', 'error');
+            }
+
+            const estado = document.getElementById('estado-excel-vademecum');
+            const lector = new FileReader();
+            lector.onload = async function(e) {
+                let filas, saltados;
+                try {
+                    const datos = new Uint8Array(e.target.result);
+                    const libro = XLSX.read(datos, { type: 'array' });
+                    const hoja = libro.Sheets[libro.SheetNames[0]];
+                    ({ filas, saltados } = mapearFilasVademecum(XLSX.utils.sheet_to_json(hoja)));
+                } catch (err) {
+                    event.target.value = '';
+                    return mostrarToast('No se pudo leer el archivo: ' + err.message, 'error');
+                }
+
+                if (filas.length === 0) {
+                    event.target.value = '';
+                    return mostrarToast('No se detectaron filas válidas (falta "Principio Activo").', 'error');
+                }
+
+                if (estado) estado.innerText = `📥 Guardando... 0/${filas.length}`;
+                await guardarVademecumEnLotes(filas, saltados, (hechos, total) => {
+                    if (estado) estado.innerText = `📥 Guardando... ${hechos}/${total}`;
+                });
+                if (estado) estado.innerText = '';
+                event.target.value = '';
+            };
+            lector.readAsArrayBuffer(archivo);
+        }
+
+        function generarFiltrosVademecum() {
+            const cont = document.getElementById('contenedor-filtros');
+            if (!cont) return;
+            const categorias = [...new Set(vademecumMemoria.map(f => f.categoriaFiltro))].filter(Boolean).sort();
+            if (filtroVademecumActivo !== 'Todos' && !categorias.includes(filtroVademecumActivo)) {
+                filtroVademecumActivo = 'Todos';
+            }
+            cont.innerHTML = '';
+            ['Todos', ...categorias].forEach(cat => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn-filtro' + (cat === filtroVademecumActivo ? ' activo' : '');
+                btn.textContent = cat;
+                btn.onclick = () => filtrarVademecum(cat, btn);
+                cont.appendChild(btn);
+            });
+        }
+
+        function filtrarVademecum(categoria, btn) {
+            filtroVademecumActivo = categoria;
+            document.querySelectorAll('#contenedor-filtros .btn-filtro').forEach(b => b.classList.remove('activo'));
+            if (btn) btn.classList.add('activo');
+            aplicarFiltrosBusquedaVademecum();
+        }
+
+        function aplicarFiltrosBusquedaVademecum() {
+            const input = document.getElementById('buscador-vademecum');
+            if (!input) return;
+            const texto = normalizar(input.value.trim());
+            const filtrados = vademecumMemoria.filter(f => {
+                const coincideTexto = !texto ||
+                    normalizar(f.principioActivo || '').includes(texto) ||
+                    normalizar(f.comercial || '').includes(texto) ||
+                    normalizar(f.indicaciones || '').includes(texto);
+                const coincideCat = filtroVademecumActivo === 'Todos' || f.categoriaFiltro === filtroVademecumActivo;
+                return coincideTexto && coincideCat;
+            });
+            mostrarResultadosVademecum(filtrados);
+        }
+
+        function mostrarResultadosVademecum(datos) {
+            const cont = document.getElementById('resultados-vademecum');
+            if (!cont) return;
+            cont.innerHTML = '';
+
+            if (vademecumMemoria.length === 0) {
+                cont.innerHTML = '<div style="text-align:center; padding:15px; color:gray;">Aún no se ha cargado el Vademécum.</div>';
+                return;
+            }
+            if (datos.length === 0) {
+                cont.innerHTML = '<div style="text-align:center; padding:15px; color:gray;">No se encontraron fármacos.</div>';
+                return;
+            }
+
+            datos.forEach(f => {
+                const div = document.createElement('div');
+                div.className = 'farmaco-card';
+                div.onclick = (e) => {
+                    if (e.target.closest('.info-grid')) return;
+                    div.classList.toggle('abierto');
+                };
+                div.innerHTML = `
+                    <div class="farmaco-header">
+                        <div class="titulo-grupo">
+                            <h2>${escapeHtml(f.principioActivo)}</h2>
+                            <span class="tag-grupo">${escapeHtml(f.grupo)}</span>
+                        </div>
+                        <div class="flecha">▼</div>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-box"><h3>Acción</h3><p>${escapeHtml(f.accion)}</p></div>
+                        <div class="info-box"><h3>Indicaciones</h3><p>${escapeHtml(f.indicaciones)}</p></div>
+                        <div class="info-box"><h3>Posología</h3><p>${escapeHtml(f.posologia)}</p></div>
+                        <div class="info-box"><h3 class="warning-text">Precauciones</h3><p>${escapeHtml(f.precauciones)}</p></div>
+                        <div class="info-box"><h3>Nombres Comerciales</h3><p>${escapeHtml(f.comercial)}</p></div>
+                    </div>
+                `;
+                cont.appendChild(div);
+            });
         }
 
         function renderizarHistorial() {

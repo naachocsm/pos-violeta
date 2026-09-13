@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pos-violeta-v11';
+const CACHE_NAME = 'pos-violeta-v12';
 const ARCHIVOS_BASE = ['./', './index.html', './manifest.json', './icon.png'];
 
 self.addEventListener('install', (event) => {
