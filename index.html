@@ -299,6 +299,8 @@
         <button class="main-tab-btn" id="btn-mod-pedidos" onclick="cambiarModulo('pedidos')">📦 Pedidos y Movimientos</button>
         <button class="main-tab-btn" id="btn-mod-historial-dia" onclick="cambiarModulo('historial-dia')">📅 Historial</button>
         <button class="main-tab-btn" id="btn-mod-corte" onclick="cambiarModulo('corte')">✂️ Corte</button>
+        <button class="main-tab-btn" id="btn-mod-vademecum" onclick="cambiarModulo('vademecum')">💊 Vademécum</button>
+        <button class="main-tab-btn" id="btn-mod-inventario" onclick="cambiarModulo('inventario')">⚙️ Actualizar Inventario</button>
         <button class="main-tab-btn" id="btn-mod-configuracion" onclick="cambiarModulo('configuracion')" style="margin-left:auto;">🛠️ Configuración</button>
     </div>
 
@@ -628,6 +630,46 @@
             </div>
         </div>
 
+        <!-- MÓDULO: VADEMÉCUM -->
+        <div id="modulo-vademecum" class="app-modulo">
+            <div class="container-interno">
+                <div style="background:white; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid var(--gris-claro);">
+                    <h3 style="color:var(--morado-oscuro); margin-top:0;">Cargar Vademécum</h3>
+                    <p style="font-size:0.9rem; color:gray;">Sube un Excel con columnas "Principio Activo", "Categoría / Filtro", "Grupo Farmacológico", "Mecanismo de Acción", "Indicaciones", "Posología", "Precauciones / Advertencias" y "Nombres Comerciales".</p>
+                    <label class="file-label" for="file-vademecum-excel">📄 Seleccionar archivo Excel</label>
+                    <input type="file" id="file-vademecum-excel" accept=".xlsx,.xls,.csv" style="display:none;" onchange="procesarExcelVademecum(event)">
+                    <span id="estado-excel-vademecum" style="margin-left:10px; color:var(--morado-oscuro); font-weight:bold;"></span>
+                </div>
+                <input type="text" id="buscador-vademecum" class="buscador-input" placeholder="🔍 Buscar por principio activo, nombre comercial o indicación..." style="margin-bottom:15px;">
+                <div class="filtros" id="contenedor-filtros"></div>
+                <div id="resultados-vademecum">
+                    <div style="text-align:center; padding:15px; color:gray;">Aún no se ha cargado el Vademécum.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MÓDULO: ACTUALIZAR INVENTARIO -->
+        <div id="modulo-inventario" class="app-modulo">
+            <div class="container-interno">
+                <h2 style="color:var(--morado-oscuro);">Cargar Inventario masivo desde Excel</h2>
+                <div style="background: white; padding: 15px; border-radius:8px; margin-bottom:15px; border: 1px solid var(--gris-claro);">
+                    <p><strong>Opción A — subir el archivo directo:</strong> selecciona tu Excel (.xlsx/.xls/.csv) más abajo. El código detecta solo las columnas de Código, Producto, Precio, Existencia y Departamento.</p>
+                    <p><strong>Opción B — copiar y pegar:</strong> selecciona y copia las celdas de tu Excel, pégalas en la caja de texto y procesa.</p>
+                    <p>¿Quieres editar el catálogo actual en Excel? Descárgalo primero en "🛠️ Configuración → Respaldo".</p>
+                </div>
+                <div style="background: white; padding: 15px; border-radius:8px; margin-bottom:15px; border: 1px solid var(--gris-claro);">
+                    <label class="file-label" for="file-inventario-excel">📄 Seleccionar archivo Excel</label>
+                    <input type="file" id="file-inventario-excel" accept=".xlsx,.xls,.csv" style="display:none;" onchange="procesarExcelInventario(event)">
+                    <span id="estado-excel-inventario" style="margin-left:10px; color:var(--morado-oscuro); font-weight:bold;"></span>
+                </div>
+                <textarea id="paste-area" placeholder="...o pega aquí los datos de tu Excel" rows="8" style="width:100%; padding:10px; font-family:monospace; font-size:16px; margin-bottom:10px; border-radius:8px; border:2px solid var(--gris-claro); box-sizing:border-box;"></textarea>
+                <button class="btn-concretar" id="btn-procesar-inventario" onclick="procesarPegado()" style="width:100%; padding:15px; font-size:1.05rem;">📥 Procesar y Guardar Inventario</button>
+                <p style="margin-top:20px; font-weight:bold; color:var(--morado-oscuro); font-size: 1.2rem;">
+                    Productos guardados: <span id="inv-count" style="color: var(--rojo-corazon);">0</span>
+                </p>
+            </div>
+        </div>
+
         <!-- MÓDULO: CONFIGURACIÓN -->
         <div id="modulo-configuracion" class="app-modulo">
             <div class="container-interno">
@@ -707,6 +749,8 @@
         let faltantesMemoria = [];
         let cortesMemoria = [];
         let productoAjusteActual = null;
+        let vademecumMemoria = [];
+        let filtroVademecumActivo = 'Todos';
 
         let filasActuales = [];
         let paginaInventario = 1;
@@ -817,6 +861,8 @@
                 inventarioMemoria = snap.docs.map(d => ({ codigo: d.id, ...d.data() }));
                 inventarioDict = {};
                 inventarioMemoria.forEach(p => { inventarioDict[p.codigo.toLowerCase()] = p; });
+                const contadorInv = document.getElementById('inv-count');
+                if (contadorInv) contadorInv.innerText = inventarioMemoria.length.toLocaleString('es-CL');
                 renderizarDashboardSiVisible();
                 manejarBusquedaPos();
                 renderizarPromociones();
@@ -859,6 +905,12 @@
                 cortesMemoria = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderizarHistorialCortes();
             }, err => mostrarToast('Error leyendo cortes de caja: ' + err.message, 'error'));
+
+            db.collection('vademecum').onSnapshot(snap => {
+                vademecumMemoria = snap.docs.map(d => d.data());
+                generarFiltrosVademecum();
+                aplicarFiltrosBusquedaVademecum();
+            }, err => mostrarToast('Error leyendo vademécum: ' + err.message, 'error'));
 
             cargarTopVentas();
         }
@@ -1002,6 +1054,7 @@
             if (id === 'dashboard') { cargarTopVentas(); if (dashboardSucio) renderizarDashboard(); }
             if (id === 'ajustes') setTimeout(() => document.getElementById('ajust-codigo').focus(), 100);
             if (id === 'corte') renderizarCorte();
+            if (id === 'vademecum') setTimeout(() => document.getElementById('buscador-vademecum').focus(), 100);
         }
 
         window.onload = function () {
@@ -1929,6 +1982,291 @@
                 </div>`;
             }).join('');
         }
+
+        // ----------------------------------------------------
+        // ACTUALIZAR INVENTARIO (carga masiva: pegar o subir Excel)
+        // ----------------------------------------------------
+        function parsearFilasPegado(texto) {
+            const lineas = texto.split('\n');
+            let nuevoInventario = [];
+            let saltados = 0;
+            let codeIdx = 0, nameIdx = 1, priceIdx = 3, stockIdx = -1, deptoIdx = -1;
+            let startIndex = 0;
+
+            const headers = lineas[0].toLowerCase();
+            if (headers.includes('producto') || headers.includes('código') || headers.includes('código de barras')) {
+                startIndex = 1;
+                const hCols = lineas[0].split('\t').map(h => h.trim().toLowerCase());
+                const fCode = hCols.findIndex(h => h.includes('código') || h.includes('codigo'));
+                const fName = hCols.findIndex(h => h.includes('producto') || h.includes('descripción'));
+                const fPrice = hCols.findIndex(h => h === 'p. venta' || h.includes('venta') || h.includes('precio'));
+                const fStock = hCols.findIndex(h => h.includes('stock') || h.includes('existencia') || h.includes('cantidad'));
+                const fDepto = hCols.findIndex(h => h.includes('departamento') || h.includes('depto') || h.includes('familia') || h.includes('categoria'));
+                if (fCode !== -1) codeIdx = fCode;
+                if (fName !== -1) nameIdx = fName;
+                if (fPrice !== -1) priceIdx = fPrice;
+                if (fStock !== -1) stockIdx = fStock;
+                if (fDepto !== -1) deptoIdx = fDepto;
+            }
+
+            for (let i = startIndex; i < lineas.length; i++) {
+                if (!lineas[i].trim()) continue;
+                const cols = lineas[i].split('\t');
+                if (cols.length > Math.max(codeIdx, nameIdx)) {
+                    const codigo = cols[codeIdx] ? cols[codeIdx].trim() : '';
+                    const producto = cols[nameIdx] ? cols[nameIdx].trim() : '';
+                    const precioRaw = cols[priceIdx] ? cols[priceIdx].trim() : '0';
+                    const precio = parseInt(precioRaw.replace(/[^0-9]/g, '')) || 0;
+                    const stock = stockIdx !== -1 && cols[stockIdx] ? (parseInt(cols[stockIdx].replace(/[^0-9]/g, '')) || 0) : 0;
+                    const departamento = deptoIdx !== -1 && cols[deptoIdx] ? cols[deptoIdx].trim() : '';
+                    if (producto && codigo) nuevoInventario.push({ codigo, producto, precio, stock, departamento });
+                    else if (producto && !codigo) saltados++;
+                }
+            }
+            return { filas: nuevoInventario, saltados };
+        }
+
+        // Guarda filas {codigo,producto,precio,stock,departamento} en Firestore en lotes de
+        // 450. Común a "pegar texto" y "subir Excel": ambos terminan en la misma escritura real.
+        async function guardarInventarioEnLotes(filas, saltados, onProgreso) {
+            const TAM_LOTE = 450;
+            try {
+                for (let i = 0; i < filas.length; i += TAM_LOTE) {
+                    const lote = filas.slice(i, i + TAM_LOTE);
+                    const batch = db.batch();
+                    lote.forEach(p => {
+                        const datos = { producto: p.producto, precio: p.precio, stock: p.stock };
+                        if (p.departamento) datos.departamento = p.departamento;
+                        batch.set(db.collection('productos').doc(p.codigo), datos, { merge: true });
+                    });
+                    await batch.commit();
+                    if (onProgreso) onProgreso(Math.min(i + TAM_LOTE, filas.length), filas.length);
+                }
+                mostrarToast(`Se guardaron ${filas.length.toLocaleString('es-CL')} productos.` + (saltados > 0 ? ` (${saltados} sin código, no se importaron)` : ''), 'exito');
+                return true;
+            } catch (err) {
+                mostrarToast('Error guardando el inventario: ' + err.message, 'error');
+                return false;
+            }
+        }
+
+        async function procesarPegado() {
+            const texto = document.getElementById('paste-area').value;
+            if (!texto.trim()) return mostrarToast('Pega los datos del Excel primero.', 'error');
+            if (FIREBASE_SIN_CONFIGURAR) return mostrarToast('Falta configurar la base de datos compartida.', 'error');
+
+            const { filas, saltados } = parsearFilasPegado(texto);
+            if (filas.length === 0) return mostrarToast('No se detectaron columnas válidas. Revisa el formato de copiado.', 'error');
+
+            const btn = document.getElementById('btn-procesar-inventario');
+            const textoOriginalBtn = btn.innerText;
+            btn.disabled = true;
+            const ok = await guardarInventarioEnLotes(filas, saltados, (hechos, total) => { btn.innerText = `📥 Guardando... ${hechos}/${total}`; });
+            if (ok) document.getElementById('paste-area').value = '';
+            btn.disabled = false;
+            btn.innerText = textoOriginalBtn;
+        }
+
+        // Igual detección de columnas por nombre que parsearFilasPegado, adaptada a filas
+        // ya parseadas por SheetJS (objetos {NombreColumna: valor}, no texto tabulado).
+        function mapearFilasExcel(filasExcel) {
+            let saltados = 0;
+            const filas = [];
+            filasExcel.forEach(fila => {
+                const claves = Object.keys(fila);
+                const claveCodigo = claves.find(k => k.toLowerCase().includes('código') || k.toLowerCase().includes('codigo')) || claves[0];
+                const claveProducto = claves.find(k => k.toLowerCase().includes('producto') || k.toLowerCase().includes('descrip')) || claves[1];
+                const clavePrecio = claves.find(k => k.toLowerCase().includes('venta') || k.toLowerCase().includes('precio')) || claves[3];
+                const claveStock = claves.find(k => k.toLowerCase().includes('existencia') || k.toLowerCase().includes('stock') || k.toLowerCase().includes('cantidad'));
+                const claveDepto = claves.find(k => { const kl = k.toLowerCase(); return kl.includes('departamento') || kl.includes('depto') || kl.includes('familia') || kl.includes('categoria'); });
+
+                const codigo = claveCodigo ? String(fila[claveCodigo] ?? '').trim() : '';
+                const producto = claveProducto ? String(fila[claveProducto] ?? '').trim() : '';
+                const precioRaw = clavePrecio ? String(fila[clavePrecio] ?? '0') : '0';
+                const precio = parseInt(precioRaw.replace(/[^0-9]/g, '')) || 0;
+                const stock = (claveStock && fila[claveStock] != null) ? (parseInt(String(fila[claveStock]).replace(/[^0-9]/g, '')) || 0) : 0;
+                const departamento = (claveDepto && fila[claveDepto] != null) ? String(fila[claveDepto]).trim() : '';
+
+                if (producto && codigo) filas.push({ codigo, producto, precio, stock, departamento });
+                else if (producto && !codigo) saltados++;
+            });
+            return { filas, saltados };
+        }
+
+        function procesarExcelInventario(event) {
+            const archivo = event.target.files[0];
+            if (!archivo) return;
+            if (FIREBASE_SIN_CONFIGURAR) { event.target.value = ''; return mostrarToast('Falta configurar la base de datos compartida.', 'error'); }
+
+            const estado = document.getElementById('estado-excel-inventario');
+            const lector = new FileReader();
+            lector.onload = async function (e) {
+                let filas, saltados;
+                try {
+                    const datos = new Uint8Array(e.target.result);
+                    const libro = XLSX.read(datos, { type: 'array' });
+                    const hoja = libro.Sheets[libro.SheetNames[0]];
+                    ({ filas, saltados } = mapearFilasExcel(XLSX.utils.sheet_to_json(hoja)));
+                } catch (err) {
+                    event.target.value = '';
+                    return mostrarToast('No se pudo leer el archivo: ' + err.message, 'error');
+                }
+                if (filas.length === 0) { event.target.value = ''; return mostrarToast('No se detectaron columnas válidas en el Excel.', 'error'); }
+
+                if (estado) estado.innerText = `📥 Guardando... 0/${filas.length}`;
+                await guardarInventarioEnLotes(filas, saltados, (hechos, total) => { if (estado) estado.innerText = `📥 Guardando... ${hechos}/${total}`; });
+                if (estado) estado.innerText = '';
+                event.target.value = '';
+            };
+            lector.readAsArrayBuffer(archivo);
+        }
+
+        // ----------------------------------------------------
+        // VADEMÉCUM
+        // ----------------------------------------------------
+        function mapearFilasVademecum(filasExcel) {
+            let saltados = 0;
+            const filas = [];
+            filasExcel.forEach(row => {
+                const principioActivo = String(row['Principio Activo'] ?? '').trim();
+                const slug = normalizar(principioActivo).trim().replace(/\s+/g, '-');
+                if (!principioActivo || !slug) { saltados++; return; }
+                filas.push({
+                    id: slug,
+                    principioActivo,
+                    categoriaFiltro: String(row['Categoría / Filtro'] ?? 'Otros').trim() || 'Otros',
+                    grupo: String(row['Grupo Farmacológico'] ?? '-').trim() || '-',
+                    accion: String(row['Mecanismo de Acción'] ?? '-').trim() || '-',
+                    indicaciones: String(row['Indicaciones'] ?? '-').trim() || '-',
+                    posologia: String(row['Posología'] ?? '-').trim() || '-',
+                    precauciones: String(row['Precauciones / Advertencias'] ?? '-').trim() || '-',
+                    comercial: String(row['Nombres Comerciales'] ?? '-').trim() || '-'
+                });
+            });
+            return { filas, saltados };
+        }
+
+        async function guardarVademecumEnLotes(filas, saltados, onProgreso) {
+            const TAM_LOTE = 450;
+            try {
+                for (let i = 0; i < filas.length; i += TAM_LOTE) {
+                    const lote = filas.slice(i, i + TAM_LOTE);
+                    const batch = db.batch();
+                    lote.forEach(f => {
+                        batch.set(db.collection('vademecum').doc(f.id), {
+                            principioActivo: f.principioActivo, categoriaFiltro: f.categoriaFiltro, grupo: f.grupo,
+                            accion: f.accion, indicaciones: f.indicaciones, posologia: f.posologia,
+                            precauciones: f.precauciones, comercial: f.comercial
+                        }, { merge: true });
+                    });
+                    await batch.commit();
+                    if (onProgreso) onProgreso(Math.min(i + TAM_LOTE, filas.length), filas.length);
+                }
+                mostrarToast(`Se guardaron ${filas.length.toLocaleString('es-CL')} fármacos.` + (saltados > 0 ? ` (${saltados} sin principio activo, no se importaron)` : ''), 'exito');
+                return true;
+            } catch (err) {
+                mostrarToast('Error guardando el vademécum: ' + err.message, 'error');
+                return false;
+            }
+        }
+
+        function procesarExcelVademecum(event) {
+            const archivo = event.target.files[0];
+            if (!archivo) return;
+            if (FIREBASE_SIN_CONFIGURAR) { event.target.value = ''; return mostrarToast('Falta configurar la base de datos compartida.', 'error'); }
+
+            const estado = document.getElementById('estado-excel-vademecum');
+            const lector = new FileReader();
+            lector.onload = async function (e) {
+                let filas, saltados;
+                try {
+                    const datos = new Uint8Array(e.target.result);
+                    const libro = XLSX.read(datos, { type: 'array' });
+                    const hoja = libro.Sheets[libro.SheetNames[0]];
+                    ({ filas, saltados } = mapearFilasVademecum(XLSX.utils.sheet_to_json(hoja)));
+                } catch (err) {
+                    event.target.value = '';
+                    return mostrarToast('No se pudo leer el archivo: ' + err.message, 'error');
+                }
+                if (filas.length === 0) { event.target.value = ''; return mostrarToast('No se detectaron filas válidas (falta "Principio Activo").', 'error'); }
+
+                if (estado) estado.innerText = `📥 Guardando... 0/${filas.length}`;
+                await guardarVademecumEnLotes(filas, saltados, (hechos, total) => { if (estado) estado.innerText = `📥 Guardando... ${hechos}/${total}`; });
+                if (estado) estado.innerText = '';
+                event.target.value = '';
+            };
+            lector.readAsArrayBuffer(archivo);
+        }
+
+        function generarFiltrosVademecum() {
+            const cont = document.getElementById('contenedor-filtros');
+            if (!cont) return;
+            const categorias = [...new Set(vademecumMemoria.map(f => f.categoriaFiltro))].filter(Boolean).sort();
+            if (filtroVademecumActivo !== 'Todos' && !categorias.includes(filtroVademecumActivo)) filtroVademecumActivo = 'Todos';
+            cont.innerHTML = '';
+            ['Todos', ...categorias].forEach(cat => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn-filtro' + (cat === filtroVademecumActivo ? ' activo' : '');
+                btn.textContent = cat;
+                btn.onclick = () => filtrarVademecum(cat, btn);
+                cont.appendChild(btn);
+            });
+        }
+
+        function filtrarVademecum(categoria, btn) {
+            filtroVademecumActivo = categoria;
+            document.querySelectorAll('#contenedor-filtros .btn-filtro').forEach(b => b.classList.remove('activo'));
+            if (btn) btn.classList.add('activo');
+            aplicarFiltrosBusquedaVademecum();
+        }
+
+        function aplicarFiltrosBusquedaVademecum() {
+            const input = document.getElementById('buscador-vademecum');
+            if (!input) return;
+            const texto = normalizar(input.value.trim());
+            const filtrados = vademecumMemoria.filter(f => {
+                const coincideTexto = !texto ||
+                    normalizar(f.principioActivo || '').includes(texto) ||
+                    normalizar(f.comercial || '').includes(texto) ||
+                    normalizar(f.indicaciones || '').includes(texto);
+                const coincideCat = filtroVademecumActivo === 'Todos' || f.categoriaFiltro === filtroVademecumActivo;
+                return coincideTexto && coincideCat;
+            });
+            mostrarResultadosVademecum(filtrados);
+        }
+
+        function mostrarResultadosVademecum(datos) {
+            const cont = document.getElementById('resultados-vademecum');
+            if (!cont) return;
+            cont.innerHTML = '';
+            if (vademecumMemoria.length === 0) { cont.innerHTML = '<div style="text-align:center; padding:15px; color:gray;">Aún no se ha cargado el Vademécum.</div>'; return; }
+            if (datos.length === 0) { cont.innerHTML = '<div style="text-align:center; padding:15px; color:gray;">No se encontraron fármacos.</div>'; return; }
+
+            datos.forEach(f => {
+                const div = document.createElement('div');
+                div.className = 'farmaco-card';
+                div.onclick = (e) => { if (e.target.closest('.info-grid')) return; div.classList.toggle('abierto'); };
+                div.innerHTML = `
+                    <div class="farmaco-header">
+                        <div class="titulo-grupo">
+                            <h2>${escapeHtml(f.principioActivo)}</h2>
+                            <span class="tag-grupo">${escapeHtml(f.grupo)}</span>
+                        </div>
+                        <div class="flecha">▼</div>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-box"><h3>Acción</h3><p>${escapeHtml(f.accion)}</p></div>
+                        <div class="info-box"><h3>Indicaciones</h3><p>${escapeHtml(f.indicaciones)}</p></div>
+                        <div class="info-box"><h3>Posología</h3><p>${escapeHtml(f.posologia)}</p></div>
+                        <div class="info-box"><h3 class="warning-text">Precauciones</h3><p>${escapeHtml(f.precauciones)}</p></div>
+                        <div class="info-box"><h3>Nombres Comerciales</h3><p>${escapeHtml(f.comercial)}</p></div>
+                    </div>
+                `;
+                cont.appendChild(div);
+            });
+        }
+        document.getElementById('buscador-vademecum').addEventListener('input', aplicarFiltrosBusquedaVademecum);
 
         // ----------------------------------------------------
         // SERVICE WORKER (instalación PWA + auto-actualización)
