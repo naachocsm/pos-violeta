@@ -39,10 +39,6 @@
         .btn-usuario-header:hover { border-color: var(--morado-vibrante); background: var(--morado-pastel); }
         .header-icon-btn { cursor: pointer; font-size: 1.5rem; transition: transform 0.2s; display: inline-block; user-select: none; background: none; border: none; padding: 0; touch-action: manipulation; }
         .header-icon-btn:hover { transform: scale(1.15); }
-        .estado-conexion { display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 0.8rem; color: gray; }
-        .punto { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
-        .punto.online { background: var(--verde-exito); }
-        .punto.offline { background: var(--rojo-corazon); }
 
         /* PESTAÑAS PRINCIPALES */
         .main-tabs { display: flex; gap: 8px; padding: 10px 5%; background: var(--blanco); border-bottom: 4px solid var(--morado-vibrante); overflow-x: auto; box-shadow: 0 4px 6px rgba(0,0,0,0.05); flex-shrink: 0; }
@@ -261,17 +257,13 @@
     </noscript>
 
     <div id="login-overlay">
-        <div class="login-box" id="login-box-form">
+        <div class="login-box" id="conectando-box" style="text-align:center;">
             <h2>🌷 Farmacia La Violeta</h2>
-            <p style="color:gray; margin-top:-10px;">Ingresa con tu cuenta de personal</p>
-            <input type="email" id="login-email" placeholder="Correo" autocomplete="username">
-            <input type="password" id="login-pass" placeholder="Contraseña" autocomplete="current-password">
-            <button class="btn-concretar" id="btn-login" style="width:100%; padding:15px; font-size:1.1rem;" onclick="iniciarSesion()">Ingresar</button>
-            <p id="login-error" style="color:var(--rojo-corazon); font-size:0.85rem; min-height:1.2em; margin-bottom:0;"></p>
+            <p style="color:gray;">Conectando...</p>
         </div>
         <div class="login-box" id="config-faltante" style="display:none;">
             <h2>⚠️ Falta configurar</h2>
-            <p style="color:gray;">Este sistema necesita conectarse a una base de datos compartida antes de usarse.
+            <p id="config-faltante-texto" style="color:gray;">Este sistema necesita conectarse a una base de datos compartida antes de usarse.
                 Abre <code>index.html</code> y sigue las instrucciones que están al inicio del bloque
                 <code>&lt;script&gt;</code> principal (buscar "CONFIGURACIÓN DE FIREBASE").</p>
         </div>
@@ -286,23 +278,21 @@
             <input type="file" id="banner-upload" accept="image/*" style="display: none;" onchange="cargarBanner(event)">
         </div>
         <div class="header-right">
-            <span class="estado-conexion"><span id="punto-conexion" class="punto online"></span><span id="texto-conexion">En línea</span></span>
             <button id="btn-usuario-actual" class="btn-usuario-header" onclick="abrirModalLogin()">👤 Ingresar</button>
-            <button class="header-icon-btn" title="Cerrar sesión de Firebase" onclick="cerrarSesion()">🚪</button>
+            <button class="header-icon-btn" title="Vademécum" onclick="cambiarModulo('vademecum')">💊</button>
         </div>
     </header>
 
     <div class="main-tabs">
         <button class="main-tab-btn activo" id="btn-mod-pos" onclick="cambiarModulo('pos')">🛒 Venta</button>
         <button class="main-tab-btn" id="btn-mod-dashboard" onclick="cambiarModulo('dashboard')">📊 Inventario</button>
-        <button class="main-tab-btn" id="btn-mod-ajustes" onclick="cambiarModulo('ajustes')">✏️ Ajustar Inventario</button>
-        <button class="main-tab-btn" id="btn-mod-pedidos" onclick="cambiarModulo('pedidos')">📦 Pedidos y Movimientos</button>
+        <button class="main-tab-btn tab-admin oculto" id="btn-mod-ajustes" onclick="cambiarModulo('ajustes')">✏️ Ajustar Inventario</button>
+        <button class="main-tab-btn tab-admin oculto" id="btn-mod-pedidos" onclick="cambiarModulo('pedidos')">📦 Pedidos y Movimientos</button>
         <button class="main-tab-btn" id="btn-mod-historial-dia" onclick="cambiarModulo('historial-dia')">📅 Historial</button>
-        <button class="main-tab-btn" id="btn-mod-corte" onclick="cambiarModulo('corte')">✂️ Corte</button>
-        <button class="main-tab-btn" id="btn-mod-fidelizacion" onclick="cambiarModulo('fidelizacion')">👥 Clientes</button>
-        <button class="main-tab-btn" id="btn-mod-vademecum" onclick="cambiarModulo('vademecum')">💊 Vademécum</button>
-        <button class="main-tab-btn" id="btn-mod-inventario" onclick="cambiarModulo('inventario')">⚙️ Actualizar Inventario</button>
-        <button class="main-tab-btn" id="btn-mod-configuracion" onclick="cambiarModulo('configuracion')" style="margin-left:auto;">🛠️ Configuración</button>
+        <button class="main-tab-btn tab-admin oculto" id="btn-mod-corte" onclick="cambiarModulo('corte')">✂️ Corte</button>
+        <button class="main-tab-btn tab-admin oculto" id="btn-mod-fidelizacion" onclick="cambiarModulo('fidelizacion')">👥 Clientes</button>
+        <button class="main-tab-btn tab-admin oculto" id="btn-mod-inventario" onclick="cambiarModulo('inventario')">⚙️ Actualizar Inventario</button>
+        <button class="main-tab-btn tab-admin oculto" id="btn-mod-configuracion" onclick="cambiarModulo('configuracion')" style="margin-left:auto;">🛠️ Configuración</button>
     </div>
 
     <div class="reloj-flotante"><span id="reloj-simple">-- - --- &nbsp;&nbsp; --:-- --</span></div>
@@ -729,6 +719,9 @@
                             <input type="text" id="nuevo-user-nombre" class="buscador-input" placeholder="Ej: Sandra I.">
                             <label style="font-weight:bold; display:block; margin-bottom:5px; margin-top:10px;">PIN de Acceso (4 dígitos):</label>
                             <input type="password" id="nuevo-user-pin" class="buscador-input" placeholder="****" maxlength="4" style="letter-spacing: 5px; font-weight:bold;">
+                            <label style="display:flex; align-items:center; gap:8px; margin-top:12px; font-weight:600; cursor:pointer;">
+                                <input type="checkbox" id="nuevo-user-admin" style="width:auto;"> Es administrador (acceso a todo)
+                            </label>
                             <button class="btn-concretar" style="margin-top: 15px; width: 100%;" onclick="guardarUsuario()">+ Agregar Personal</button>
                         </div>
                         <div style="flex: 1; min-width: 250px;">
@@ -768,6 +761,11 @@
     <script>
         // ======================================================================
         // CONFIGURACIÓN DE FIREBASE
+        // El acceso real de cada persona lo controla el PIN de turno (más abajo),
+        // no un login visible de Firebase. Para que igual funcione tiene que estar
+        // habilitado el inicio de sesión ANÓNIMO en el proyecto:
+        //   Firebase Console → Authentication → Sign-in method → "Anonymous" → Habilitar.
+        // Sin ese paso la app se queda en "Falta configurar" al cargar.
         // ======================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyA_JIscjNIuHmZEIKCYrCQD8XBNmf6WJQo",
@@ -876,50 +874,26 @@
         function idResumenMes(fecha) { return 'mes-' + fecha.toISOString().slice(0, 7); }
         function idResumenAnio(fecha) { return 'anio-' + fecha.getFullYear(); }
 
-        function actualizarEstadoConexion() {
-            const online = navigator.onLine;
-            const punto = document.getElementById('punto-conexion');
-            const texto = document.getElementById('texto-conexion');
-            if (!punto || !texto) return;
-            punto.className = 'punto ' + (online ? 'online' : 'offline');
-            texto.innerText = online ? 'En línea' : 'Sin conexión';
-        }
-        window.addEventListener('online', actualizarEstadoConexion);
-        window.addEventListener('offline', actualizarEstadoConexion);
-
         // ----------------------------------------------------
-        // SESIÓN FIREBASE (compuerta real de acceso a toda la app)
+        // SESIÓN FIREBASE (anónima — no la ve el personal, es solo la llave
+        // técnica para que Firestore acepte leer/escribir. Quien identifica a
+        // cada persona de verdad es el PIN de turno, más abajo).
         // ----------------------------------------------------
-        function iniciarSesion() {
-            const email = document.getElementById('login-email').value.trim();
-            const pass = document.getElementById('login-pass').value;
-            const btn = document.getElementById('btn-login');
-            const errorEl = document.getElementById('login-error');
-            errorEl.innerText = '';
-            if (!email || !pass) { errorEl.innerText = 'Completa correo y contraseña.'; return; }
-            btn.disabled = true;
-            btn.innerText = 'Ingresando...';
-            auth.signInWithEmailAndPassword(email, pass)
-                .catch(() => { errorEl.innerText = 'Correo o contraseña incorrectos.'; })
-                .finally(() => { btn.disabled = false; btn.innerText = 'Ingresar'; });
-        }
-
-        function cerrarSesion() {
-            if (confirm('¿Cerrar la sesión de Firebase en este dispositivo?')) auth.signOut();
-        }
-
         if (FIREBASE_SIN_CONFIGURAR) {
-            document.getElementById('login-box-form').style.display = 'none';
+            document.getElementById('conectando-box').style.display = 'none';
             document.getElementById('config-faltante').style.display = 'block';
         } else {
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    document.getElementById('login-overlay').classList.add('oculto');
-                    iniciarListeners();
-                } else {
-                    document.getElementById('login-overlay').classList.remove('oculto');
-                    usuarioEnTurno = null;
-                }
+            auth.signInAnonymously().then(() => {
+                document.getElementById('login-overlay').classList.add('oculto');
+                iniciarListeners();
+            }).catch(err => {
+                document.getElementById('conectando-box').style.display = 'none';
+                const cajaError = document.getElementById('config-faltante');
+                cajaError.style.display = 'block';
+                const faltaHabilitar = err.code === 'auth/operation-not-allowed' || err.code === 'auth/admin-restricted-operation';
+                document.getElementById('config-faltante-texto').innerHTML = faltaHabilitar
+                    ? 'Falta habilitar el inicio de sesión anónimo en Firebase. En <a href="https://console.firebase.google.com" target="_blank">Firebase Console</a> → Authentication → Sign-in method → habilita <strong>"Anonymous"</strong>, y recarga esta página.'
+                    : 'No se pudo conectar: ' + escapeHtml(err.message);
             });
         }
 
@@ -1042,14 +1016,20 @@
             setTimeout(() => document.getElementById('login-pin').focus(), 100);
         }
 
+        function textoBotonUsuario(u) {
+            return `👤 ${escapeHtml(u.nombre)}` + (u.rol === 'admin' ? ' <small>(Admin)</small>' : '');
+        }
+
         function crearPrimerUsuario() {
             const nombre = document.getElementById('primer-user-nombre').value.trim();
             const pin = document.getElementById('primer-user-pin').value.trim();
             if (!nombre || pin.length < 4) return mostrarToast('Escribe tu nombre y un PIN de 4 dígitos.', 'error');
-            db.collection('usuarios').add({ nombre, pin }).then(ref => {
-                usuarioEnTurno = { id: ref.id, nombre, pin };
-                document.getElementById('btn-usuario-actual').innerHTML = `👤 ${escapeHtml(usuarioEnTurno.nombre)}`;
+            // El primer usuario que se crea es quien está configurando el sistema: admin automático.
+            db.collection('usuarios').add({ nombre, pin, rol: 'admin' }).then(ref => {
+                usuarioEnTurno = { id: ref.id, nombre, pin, rol: 'admin' };
+                document.getElementById('btn-usuario-actual').innerHTML = textoBotonUsuario(usuarioEnTurno);
                 document.getElementById('modal-login').style.display = 'none';
+                aplicarVisibilidadPorRol();
                 if (!esTactil) document.getElementById('pos-search').focus();
             }).catch(err => mostrarToast('No se pudo crear el usuario: ' + err.message, 'error'));
         }
@@ -1060,8 +1040,9 @@
             const u = usuariosMemoria.find(x => x.id === idSel);
             if (u && u.pin === pinIngr) {
                 usuarioEnTurno = u;
-                document.getElementById('btn-usuario-actual').innerHTML = `👤 ${escapeHtml(usuarioEnTurno.nombre)}`;
+                document.getElementById('btn-usuario-actual').innerHTML = textoBotonUsuario(usuarioEnTurno);
                 document.getElementById('modal-login').style.display = 'none';
+                aplicarVisibilidadPorRol();
                 if (!esTactil) document.getElementById('pos-search').focus();
             } else {
                 mostrarToast('PIN incorrecto. Inténtalo de nuevo.', 'error');
@@ -1073,11 +1054,13 @@
         function guardarUsuario() {
             const nombre = document.getElementById('nuevo-user-nombre').value.trim();
             const pin = document.getElementById('nuevo-user-pin').value.trim();
+            const esAdminNuevo = document.getElementById('nuevo-user-admin').checked;
             if (!nombre || !pin) return mostrarToast('Debes llenar el nombre y un PIN.', 'error');
             if (pin.length < 4) return mostrarToast('El PIN debe tener al menos 4 dígitos.', 'error');
-            db.collection('usuarios').add({ nombre, pin }).then(() => {
+            db.collection('usuarios').add({ nombre, pin, rol: esAdminNuevo ? 'admin' : 'cajero' }).then(() => {
                 document.getElementById('nuevo-user-nombre').value = '';
                 document.getElementById('nuevo-user-pin').value = '';
+                document.getElementById('nuevo-user-admin').checked = false;
                 mostrarToast('Personal agregado exitosamente.', 'exito');
             }).catch(err => mostrarToast('No se pudo agregar: ' + err.message, 'error'));
         }
@@ -1085,19 +1068,40 @@
         function renderizarUsuariosConfig() {
             const c = document.getElementById('lista-usuarios-config');
             if (!c) return;
+            const cantidadAdmins = usuariosMemoria.filter(u => u.rol === 'admin').length;
             let html = '<h4 style="margin-top:0; color:var(--morado-oscuro);">Personal Registrado</h4>';
             usuariosMemoria.forEach(u => {
-                html += `<div style="display:flex; justify-content:space-between; background:var(--blanco); padding:10px; margin-bottom:8px; border-radius:6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-                    <strong style="color:var(--texto-oscuro);">${escapeHtml(u.nombre)}</strong>
-                    <button data-id="${escapeHtml(u.id)}" class="btn-eliminar-usuario" style="background:none; border:none; color:var(--rojo-corazon); cursor:pointer; font-size:1.1rem; font-weight:bold;" title="Eliminar usuario">✖</button>
+                const esAdminActual = u.rol === 'admin';
+                html += `<div style="display:flex; justify-content:space-between; align-items:center; background:var(--blanco); padding:10px; margin-bottom:8px; border-radius:6px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); gap:8px;">
+                    <div>
+                        <strong style="color:var(--texto-oscuro);">${escapeHtml(u.nombre)}</strong>
+                        <span class="badge-stock ${esAdminActual ? 'stock-verde' : 'stock-amarillo'}" style="margin-left:6px;">${esAdminActual ? 'Admin' : 'Cajero'}</span>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
+                        <button data-id="${escapeHtml(u.id)}" class="btn-toggle-rol" style="background:none; border:1px solid var(--morado-pastel); color:var(--morado-oscuro); border-radius:6px; padding:4px 8px; cursor:pointer; font-size:0.75rem;">${esAdminActual ? 'Quitar admin' : 'Hacer admin'}</button>
+                        <button data-id="${escapeHtml(u.id)}" class="btn-eliminar-usuario" style="background:none; border:none; color:var(--rojo-corazon); cursor:pointer; font-size:1.1rem; font-weight:bold;" title="Eliminar usuario">✖</button>
+                    </div>
                 </div>`;
             });
             c.innerHTML = html;
             c.querySelectorAll('.btn-eliminar-usuario').forEach(btn => { btn.onclick = () => eliminarUsuario(btn.dataset.id); });
+            c.querySelectorAll('.btn-toggle-rol').forEach(btn => { btn.onclick = () => alternarRolUsuario(btn.dataset.id, cantidadAdmins); });
+        }
+
+        function alternarRolUsuario(id, cantidadAdminsActual) {
+            const u = usuariosMemoria.find(x => x.id === id);
+            if (!u) return;
+            const esAdminActual = u.rol === 'admin';
+            if (esAdminActual && cantidadAdminsActual <= 1) return mostrarToast('Tiene que quedar al menos un administrador.', 'error');
+            db.collection('usuarios').doc(id).update({ rol: esAdminActual ? 'cajero' : 'admin' })
+                .then(() => { if (usuarioEnTurno && usuarioEnTurno.id === id) { usuarioEnTurno.rol = esAdminActual ? 'cajero' : 'admin'; document.getElementById('btn-usuario-actual').innerHTML = textoBotonUsuario(usuarioEnTurno); aplicarVisibilidadPorRol(); } })
+                .catch(err => mostrarToast('No se pudo cambiar el rol: ' + err.message, 'error'));
         }
 
         function eliminarUsuario(id) {
             if (usuariosMemoria.length === 1) return mostrarToast('Por seguridad, no puedes eliminar al único usuario registrado.', 'error');
+            const u = usuariosMemoria.find(x => x.id === id);
+            if (u && u.rol === 'admin' && usuariosMemoria.filter(x => x.rol === 'admin').length <= 1) return mostrarToast('Tiene que quedar al menos un administrador — hacé admin a otra persona antes de eliminar a este.', 'error');
             if (!confirm('¿Eliminar a este usuario del personal?')) return;
             db.collection('usuarios').doc(id).delete().then(() => {
                 if (usuarioEnTurno && usuarioEnTurno.id === id) {
@@ -1109,9 +1113,28 @@
         }
 
         // ----------------------------------------------------
-        // NAVEGACIÓN ENTRE MÓDULOS
+        // NAVEGACIÓN ENTRE MÓDULOS Y PERMISOS POR ROL
         // ----------------------------------------------------
+        // Esto es una barrera de interfaz (oculta pestañas, bloquea el cambio de
+        // módulo), no una barrera de datos: con auth anónimo, Firestore por sí
+        // solo no distingue cajero de admin. Alcanza para el uso normal de una
+        // farmacia chica (evitar tocar algo sin querer), no contra alguien que
+        // abra la consola del navegador a propósito.
+        const MODULOS_SOLO_ADMIN = ['ajustes', 'pedidos', 'corte', 'fidelizacion', 'inventario', 'configuracion'];
+        function esAdmin() { return !!(usuarioEnTurno && usuarioEnTurno.rol === 'admin'); }
+
+        function aplicarVisibilidadPorRol() {
+            const admin = esAdmin();
+            document.querySelectorAll('.tab-admin').forEach(btn => btn.classList.toggle('oculto', !admin));
+            if (!admin) {
+                const moduloActivo = document.querySelector('.app-modulo.activo');
+                if (moduloActivo && MODULOS_SOLO_ADMIN.includes(moduloActivo.id.replace('modulo-', ''))) cambiarModulo('pos');
+            }
+            filtrarYOrdenarDashboard();
+        }
+
         function cambiarModulo(id) {
+            if (MODULOS_SOLO_ADMIN.includes(id) && !esAdmin()) { mostrarToast('Necesitás ser administrador para esto.', 'error'); return; }
             document.querySelectorAll('.app-modulo').forEach(mod => mod.classList.remove('activo'));
             document.querySelectorAll('.main-tab-btn').forEach(btn => btn.classList.remove('activo'));
             document.getElementById('modulo-' + id).classList.add('activo');
@@ -1129,7 +1152,6 @@
             const bannerGuardado = localStorage.getItem('banner_farmacia');
             if (bannerGuardado) mostrarBanner(bannerGuardado);
             actualizarReloj();
-            actualizarEstadoConexion();
         };
 
         // ----------------------------------------------------
@@ -1539,7 +1561,6 @@
                 clienteRut: cliente ? cliente.id : null,
                 clienteNombre: cliente ? `${cliente.nombre} ${cliente.apellido || ''}`.trim() : null,
                 cajero: usuarioEnTurno ? usuarioEnTurno.nombre : null,
-                creadoPor: auth.currentUser ? auth.currentUser.email : null,
                 cortada: false
             });
 
@@ -1697,29 +1718,33 @@
             const inicio = (paginaInventario - 1) * FILAS_POR_PAGINA;
             const paginaFilas = filas.slice(inicio, inicio + FILAS_POR_PAGINA);
 
+            const admin = esAdmin();
             tbody.innerHTML = paginaFilas.map((p, i) => {
                 const idx = inicio + i;
                 const stock = p.stock || 0;
                 const claseBadge = stock <= UMBRAL_CRITICO ? 'critico' : (stock <= UMBRAL_BAJO ? 'bajo' : 'ok');
                 const vendidosSemana = unidadesVendidas(p.codigo, ventasDelMes.filter(v => v.fecha && v.fecha.toDate && v.fecha.toDate() >= inicioSemana()));
                 const vendidosMes = p.vendidosMes !== undefined ? p.vendidosMes : unidadesVendidas(p.codigo, ventasDelMes);
+                const celdaStock = admin
+                    ? `<div class="ajuste-stock-dash">
+                            <button data-idx="${idx}" data-delta="-1">-</button>
+                            <span class="badge-stock-dash ${claseBadge}" data-idx="${idx}" title="Click para fijar un valor exacto">${stock}</span>
+                            <button data-idx="${idx}" data-delta="1">+</button>
+                        </div>`
+                    : `<span class="badge-stock-dash ${claseBadge}">${stock}</span>`;
                 return `
                 <tr>
                     <td><strong>${escapeHtml(p.producto)}</strong><br><small style="color:gray;">Cód: ${escapeHtml(p.codigo)}</small></td>
                     <td>$${(p.precio || 0).toLocaleString('es-CL')}</td>
-                    <td>
-                        <div class="ajuste-stock-dash">
-                            <button data-idx="${idx}" data-delta="-1">-</button>
-                            <span class="badge-stock-dash ${claseBadge}" data-idx="${idx}" title="Click para fijar un valor exacto">${stock}</span>
-                            <button data-idx="${idx}" data-delta="1">+</button>
-                        </div>
-                    </td>
+                    <td>${celdaStock}</td>
                     <td>${vendidosSemana.toLocaleString('es-CL')}</td>
                     <td>${vendidosMes.toLocaleString('es-CL')}</td>
                 </tr>`;
             }).join('');
-            tbody.querySelectorAll('.ajuste-stock-dash button').forEach(btn => { btn.onclick = () => ajustarStockDash(parseInt(btn.dataset.idx), parseInt(btn.dataset.delta)); });
-            tbody.querySelectorAll('.badge-stock-dash').forEach(el => { el.onclick = () => pedirNuevoStockDash(parseInt(el.dataset.idx)); });
+            if (admin) {
+                tbody.querySelectorAll('.ajuste-stock-dash button').forEach(btn => { btn.onclick = () => ajustarStockDash(parseInt(btn.dataset.idx), parseInt(btn.dataset.delta)); });
+                tbody.querySelectorAll('.ajuste-stock-dash .badge-stock-dash').forEach(el => { el.onclick = () => pedirNuevoStockDash(parseInt(el.dataset.idx)); });
+            }
 
             if (paginacion) {
                 const desde = inicio + 1;
@@ -1761,8 +1786,7 @@
                 fechaIso: new Date().toISOString().slice(0, 10),
                 tipo, codigo, producto, cantidad, stockAnterior, stockNuevo,
                 motivo: motivo || '',
-                cajero: usuarioEnTurno ? usuarioEnTurno.nombre : 'Desconocido',
-                creadoPor: auth.currentUser ? auth.currentUser.email : null
+                cajero: usuarioEnTurno ? usuarioEnTurno.nombre : 'Desconocido'
             };
         }
 
@@ -2004,7 +2028,6 @@
                     batch.set(corteRef, {
                         fecha: firebase.firestore.FieldValue.serverTimestamp(),
                         cajero: usuarioEnTurno.nombre,
-                        creadoPor: auth.currentUser ? auth.currentUser.email : null,
                         cantidadVentas: ventasTurno.length,
                         totalVentas: totalVentasCorteNum,
                         efectivo, tarjeta, retiro, otros,
