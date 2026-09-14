@@ -213,7 +213,41 @@
         .modal-caja { background: var(--blanco); padding: 22px; border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); box-sizing: border-box; }
         .modal-caja h3 { margin-top: 0; color: var(--morado-oscuro); text-align: center; font-size: 1.2rem; }
 
-        @media (max-width: 768px) { .pos-results-header { display: none; } .result-grid-item { grid-template-columns: 1fr; text-align: center; } .col-precio { text-align: center; } .header-right { flex-wrap: wrap; justify-content: flex-end; } .reloj-flotante { display: none; } }
+        /* AJUSTAR INVENTARIO */
+        .ajuste-form-container { background: var(--blanco); border-radius: 12px; padding: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 700px; margin: 0 auto; border-top: 5px solid var(--morado-vibrante); }
+        .ajuste-row { display: flex; align-items: center; margin-bottom: 15px; }
+        .ajuste-label { width: 170px; flex-shrink: 0; font-weight: 600; color: var(--texto-oscuro); font-size: 0.95rem; text-align: right; margin-right: 15px; }
+        .ajuste-field { flex-grow: 1; }
+        .ajuste-input { padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
+        .ajuste-input:focus { border-color: var(--morado-vibrante); box-shadow: 0 0 5px rgba(139, 92, 246, 0.3); }
+        .ajuste-input.short { width: 130px; text-align: center; font-weight: bold; }
+        .ajuste-readonly { background-color: var(--lila-fondo); color: var(--morado-oscuro); font-weight: bold; border: 1px dashed var(--morado-vibrante); cursor: not-allowed; }
+        .ajuste-desc-text { font-weight: bold; font-size: 1.1rem; color: var(--morado-oscuro); padding: 10px 0; border-bottom: 1px solid var(--gris-claro); display: inline-block; width: 100%; }
+        @media (max-width: 600px) { .ajuste-row { flex-direction: column; align-items: flex-start; } .ajuste-label { text-align: left; margin-bottom: 5px; width: auto; } }
+
+        /* PEDIDOS Y MOVIMIENTOS */
+        .pedidos-layout { display: flex; height: 100%; gap: 15px; padding: 0 15px; flex-wrap: wrap; }
+        .pedidos-main { flex: 2; min-width: 320px; background: var(--blanco); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .pedidos-side { flex: 1; min-width: 280px; background: var(--blanco); border-radius: 12px; padding: 15px; display: flex; flex-direction: column; border: 2px solid var(--morado-pastel); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .mov-table-container { max-height: 65vh; overflow-y: auto; border: 1px solid var(--gris-claro); border-radius: 6px; }
+        .mov-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        .mov-table th, .mov-table td { padding: 10px; border-bottom: 1px solid var(--gris-claro); text-align: left; }
+        .mov-table th { background-color: var(--lila-fondo); color: var(--morado-oscuro); font-weight: bold; position: sticky; top: 0; z-index: 1; }
+        .mov-table tbody tr:hover { background-color: var(--lila-fondo); }
+        .td-producto { max-width: 220px; }
+        .td-truncado { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: bold; color: var(--morado-oscuro); }
+        .badge-tipo { padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; color: white; text-align: center; display: inline-block; min-width: 60px; }
+        .bg-salida { background-color: var(--azul-salida); }
+        .bg-entrada { background-color: var(--verde-exito); }
+        .bg-ajuste { background-color: var(--naranja-pendiente); }
+        .btn-add-pedido { background: var(--morado-vibrante); color: white; border: none; width: 28px; height: 28px; border-radius: 4px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; touch-action: manipulation; }
+        .faltante-item { background: var(--lila-fondo); padding: 8px; border-radius: 6px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; gap: 8px; }
+        .input-cant-pedido { width: 50px; padding: 4px; text-align: center; border: 1px solid var(--morado-pastel); border-radius: 4px; font-weight: bold; }
+
+        /* CORTE DE CAJA */
+        .corte-diferencia-box { display: flex; justify-content: space-between; align-items: center; font-size: 1.3rem; margin-top: 15px; padding: 12px; background: var(--lila-fondo); border-radius: 8px; border: 2px solid var(--gris-claro); }
+
+        @media (max-width: 768px) { .pos-results-header { display: none; } .result-grid-item { grid-template-columns: 1fr; text-align: center; } .col-precio { text-align: center; } .header-right { flex-wrap: wrap; justify-content: flex-end; } .reloj-flotante { display: none; } .pedidos-layout { flex-direction: column; } }
     </style>
 </head>
 <body>
@@ -261,6 +295,10 @@
     <div class="main-tabs">
         <button class="main-tab-btn activo" id="btn-mod-pos" onclick="cambiarModulo('pos')">🛒 Venta</button>
         <button class="main-tab-btn" id="btn-mod-dashboard" onclick="cambiarModulo('dashboard')">📊 Inventario</button>
+        <button class="main-tab-btn" id="btn-mod-ajustes" onclick="cambiarModulo('ajustes')">✏️ Ajustar Inventario</button>
+        <button class="main-tab-btn" id="btn-mod-pedidos" onclick="cambiarModulo('pedidos')">📦 Pedidos y Movimientos</button>
+        <button class="main-tab-btn" id="btn-mod-historial-dia" onclick="cambiarModulo('historial-dia')">📅 Historial</button>
+        <button class="main-tab-btn" id="btn-mod-corte" onclick="cambiarModulo('corte')">✂️ Corte</button>
         <button class="main-tab-btn" id="btn-mod-configuracion" onclick="cambiarModulo('configuracion')" style="margin-left:auto;">🛠️ Configuración</button>
     </div>
 
@@ -350,6 +388,17 @@
             <input type="text" id="buscador-cliente-pos" class="buscador-input" placeholder="🔍 Buscar por RUT o Nombre..." oninput="buscarClientePOS()">
             <div id="lista-clientes-pos" style="flex-grow: 1; overflow-y: auto; margin-top: 10px; border-top: 1px solid var(--gris-claro); padding-top: 10px;"></div>
             <button class="btn-pendiente" style="background:#9e9e9e; margin-top: 15px;" onclick="cerrarModalClientePOS()">Volver</button>
+        </div>
+    </div>
+
+    <!-- MODAL HISTORIAL DE CORTES -->
+    <div id="modal-historial-cortes" class="modal-pantalla">
+        <div class="modal-caja" style="max-width:600px; max-height: 80vh; display: flex; flex-direction: column;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--gris-claro); padding-bottom:10px; margin-bottom:15px;">
+                <h3 style="margin:0;">📋 Historial de Cortes de Caja</h3>
+                <button onclick="document.getElementById('modal-historial-cortes').style.display='none'" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">✖</button>
+            </div>
+            <div id="lista-historial-cortes" style="flex-grow: 1; overflow-y: auto;"></div>
         </div>
     </div>
 
@@ -466,6 +515,119 @@
             </div>
         </div>
 
+        <!-- MÓDULO: AJUSTAR INVENTARIO (un producto a la vez) -->
+        <div id="modulo-ajustes" class="app-modulo">
+            <div class="container-interno">
+                <div class="ajuste-form-container">
+                    <h2 style="color: var(--morado-oscuro); margin-top: 0; border-bottom: 2px solid var(--gris-claro); padding-bottom: 10px;">Ajustar Inventario</h2>
+                    <div class="ajuste-row" style="margin-top: 20px;">
+                        <label class="ajuste-label">Código del Producto</label>
+                        <div class="ajuste-field" style="display: flex; gap: 10px;">
+                            <input type="text" id="ajust-codigo" class="ajuste-input" placeholder="Escanea o escribe código y presiona Enter..." autocomplete="off">
+                            <button class="btn-concretar" style="flex: none; width: auto; padding: 10px 15px;" onclick="procesarBuscadorAjuste()">Buscar</button>
+                        </div>
+                    </div>
+                    <div class="ajuste-row">
+                        <label class="ajuste-label">Descripción</label>
+                        <div class="ajuste-field"><span id="ajust-desc" class="ajuste-desc-text" style="color: gray; font-weight: normal; font-size: 1rem;">Esperando producto...</span></div>
+                    </div>
+                    <div class="ajuste-row">
+                        <label class="ajuste-label">Cantidad Actual</label>
+                        <div class="ajuste-field"><input type="text" id="ajust-actual" class="ajuste-input short ajuste-readonly" value="0" readonly></div>
+                    </div>
+                    <div class="ajuste-row">
+                        <label class="ajuste-label">+ / - (Sumar o Restar)</label>
+                        <div class="ajuste-field"><input type="number" id="ajust-delta" class="ajuste-input short" placeholder="Ej: 5 o -2" disabled></div>
+                    </div>
+                    <div class="ajuste-row">
+                        <label class="ajuste-label">Nueva Cantidad Total</label>
+                        <div class="ajuste-field"><input type="number" id="ajust-nueva" class="ajuste-input short" placeholder="0" disabled></div>
+                    </div>
+                    <div class="ajuste-row">
+                        <label class="ajuste-label">Motivo del ajuste</label>
+                        <div class="ajuste-field"><input type="text" id="ajust-motivo" class="ajuste-input" placeholder="Ej: Llegó mercadería, Inventario físico..." disabled></div>
+                    </div>
+                    <div style="text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+                        <button id="btn-realizar-ajuste" class="btn-concretar" style="width: 100%; max-width: 300px; padding: 15px; font-size: 1.1rem;" onclick="ejecutarAjusteInventario()" disabled>✍️ Realizar ajuste</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MÓDULO: PEDIDOS Y MOVIMIENTOS -->
+        <div id="modulo-pedidos" class="app-modulo">
+            <div class="pedidos-layout">
+                <div class="pedidos-main">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid var(--gris-claro); padding-bottom: 10px; margin-bottom: 10px;">
+                        <h2 style="color: var(--morado-oscuro); margin: 0; font-size: 1.2rem;">Historial de Movimientos de Inventario</h2>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="date" id="filtro-fecha-movimientos" class="buscador-input" style="padding: 8px 10px; width: auto; font-family: inherit; margin: 0;">
+                            <button class="btn-pendiente" style="padding: 8px 12px; width: auto; flex: none; font-size: 0.85rem;" id="btn-limpiar-filtro-mov">Todas</button>
+                        </div>
+                    </div>
+                    <div class="mov-table-container">
+                        <table class="mov-table">
+                            <thead><tr><th>Hora</th><th>Descripción del Producto</th><th style="text-align:center;">Había</th><th style="text-align:center;">Tipo</th><th style="text-align:center;">Cant.</th><th style="text-align:center;">Hay</th><th style="text-align:center;">Cajero</th><th style="text-align:center;">Pedir</th></tr></thead>
+                            <tbody id="lista-movimientos"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="pedidos-side">
+                    <h2 style="color: var(--morado-oscuro); margin-top: 0; margin-bottom: 5px; font-size: 1.2rem;">Lista Proveedor</h2>
+                    <p style="font-size: 0.8rem; color: gray; margin-top: 0;">Agrega productos usando el botón <strong style="color:var(--morado-vibrante);">+</strong> de la tabla.</p>
+                    <div id="lista-proveedor" style="flex-grow: 1; overflow-y: auto; margin-bottom: 15px; border-top: 1px solid var(--gris-claro); padding-top: 10px;"></div>
+                    <button class="btn-concretar" style="padding: 10px;" onclick="copiarListaProveedor()">📤 Copiar Lista</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MÓDULO: HISTORIAL (ventas del turno actual, sin cortar) -->
+        <div id="modulo-historial-dia" class="app-modulo">
+            <div class="container-interno">
+                <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; border-bottom: 2px solid var(--gris-claro); padding-bottom: 10px; margin-bottom: 15px;">
+                    <div>
+                        <h3 style="margin:0; color: var(--morado-oscuro);">Ventas del turno actual</h3>
+                        <p style="margin: 3px 0 0 0; font-size: 0.8rem; color: gray;">Desde el último Corte de Caja — no es necesariamente "hoy".</p>
+                    </div>
+                    <strong style="color:var(--verde-exito); font-size:1.2rem;">Total: <span id="total-dia-historial">$0</span></strong>
+                </div>
+                <div id="historial-dia-list"></div>
+            </div>
+        </div>
+
+        <!-- MÓDULO: CORTE DE CAJA -->
+        <div id="modulo-corte" class="app-modulo">
+            <div class="container-interno">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid var(--gris-claro); padding-bottom: 10px; margin-bottom: 15px;">
+                    <h2 style="color: var(--morado-oscuro); margin: 0;">✂️ Corte de Caja (Turno Actual)</h2>
+                    <button class="btn-nuevo" style="margin: 0; padding: 8px 14px;" onclick="abrirModalHistorialCortes()">📋 Historial Cortes</button>
+                </div>
+                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                    <div class="config-box" style="flex: 1; min-width: 280px; border-top: 4px solid var(--morado-vibrante);">
+                        <h3 style="margin-top:0; color: var(--morado-vibrante);">Ventas del Turno</h3>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><span>Cantidad de Ventas:</span> <strong id="corte-cant-ventas">0</strong></div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><span>Ventas en Efectivo:</span> <strong id="corte-total-efectivo" style="color: var(--verde-exito);">$0</strong></div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;"><span>Ventas con Tarjeta:</span> <strong id="corte-total-tarjeta" style="color: var(--azul-salida);">$0</strong></div>
+                        <hr style="border:0; border-top:1px dashed var(--gris-claro); margin: 15px 0;">
+                        <div style="display: flex; justify-content: space-between; font-size: 1.2rem;"><strong>Total Vendido:</strong> <strong id="corte-total-ventas" style="color: var(--morado-oscuro);">$0</strong></div>
+                    </div>
+                    <div class="config-box" style="flex: 1; min-width: 280px; border-top: 4px solid var(--naranja-pendiente);">
+                        <h3 style="margin-top:0; color: var(--naranja-pendiente);">Arqueo Físico</h3>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="font-weight: 600; font-size: 0.95rem;">Retiro de dinero ($):</label><input type="number" id="corte-retiro" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="font-weight: 600; font-size: 0.95rem;">Efectivo en caja ($):</label><input type="number" id="corte-efectivo" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="font-weight: 600; font-size: 0.95rem;">Tarjetas (Voucher) ($):</label><input type="number" id="corte-tarjeta" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="font-weight: 600; font-size: 0.95rem;">Otros ($):</label><input type="number" id="corte-otros" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
+                        <hr style="border:0; border-top:1px dashed var(--gris-claro); margin: 15px 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; margin-bottom: 10px;"><strong>Sub Total (Declarado):</strong><strong id="corte-subtotal">$0</strong></div>
+                        <div class="corte-diferencia-box" id="corte-diferencia-box"><strong>Diferencia:</strong><strong id="corte-diferencia">$0</strong></div>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 25px;">
+                    <button class="btn-rojo" style="width: 100%; max-width: 400px; padding: 15px; font-size: 1.1rem;" onclick="guardarCorte()">💾 Guardar Corte y Cerrar Turno</button>
+                </div>
+            </div>
+        </div>
+
         <!-- MÓDULO: CONFIGURACIÓN -->
         <div id="modulo-configuracion" class="app-modulo">
             <div class="container-interno">
@@ -541,6 +703,10 @@
         let metodoPagoSeleccionado = '';
 
         let promocionesCodigos = [];
+        let movimientosMemoria = [];
+        let faltantesMemoria = [];
+        let cortesMemoria = [];
+        let productoAjusteActual = null;
 
         let filasActuales = [];
         let paginaInventario = 1;
@@ -660,6 +826,8 @@
             db.collection('ventas').where('fecha', '>=', inicioMesTs).onSnapshot(snap => {
                 ventasDelMes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderizarDashboardSiVisible();
+                renderizarHistorialDia();
+                if (document.getElementById('modulo-corte').classList.contains('activo')) renderizarCorte();
             }, err => mostrarToast('Error leyendo ventas: ' + err.message, 'error'));
 
             db.collection('clientes').onSnapshot(snap => {
@@ -676,6 +844,21 @@
                 promocionesCodigos = (snap.exists && snap.data().codigos) || [];
                 renderizarPromociones();
             }, err => mostrarToast('Error leyendo promociones: ' + err.message, 'error'));
+
+            db.collection('movimientos').orderBy('fecha', 'desc').limit(300).onSnapshot(snap => {
+                movimientosMemoria = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderizarMovimientos();
+            }, err => mostrarToast('Error leyendo movimientos: ' + err.message, 'error'));
+
+            db.collection('faltantes').onSnapshot(snap => {
+                faltantesMemoria = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderizarFaltantes();
+            }, err => mostrarToast('Error leyendo la lista de proveedor: ' + err.message, 'error'));
+
+            db.collection('cortes').orderBy('fecha', 'desc').limit(100).onSnapshot(snap => {
+                cortesMemoria = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderizarHistorialCortes();
+            }, err => mostrarToast('Error leyendo cortes de caja: ' + err.message, 'error'));
 
             cargarTopVentas();
         }
@@ -817,6 +1000,8 @@
 
             if (id === 'pos' && !esTactil) setTimeout(() => document.getElementById('pos-search').focus(), 100);
             if (id === 'dashboard') { cargarTopVentas(); if (dashboardSucio) renderizarDashboard(); }
+            if (id === 'ajustes') setTimeout(() => document.getElementById('ajust-codigo').focus(), 100);
+            if (id === 'corte') renderizarCorte();
         }
 
         window.onload = function () {
@@ -1241,6 +1426,10 @@
                 batch.update(db.collection('productos').doc(item.codigo), {
                     stock: firebase.firestore.FieldValue.increment(-item.cantidad)
                 });
+                const stockPrevio = inventarioDict[item.codigo.toLowerCase()] ? (inventarioDict[item.codigo.toLowerCase()].stock || 0) : 0;
+                batch.set(db.collection('movimientos').doc(), construirMovimiento(
+                    'Salida', item.codigo, item.producto, item.cantidad, stockPrevio, stockPrevio - item.cantidad, 'Venta POS'
+                ));
             });
 
             const incrementos = {};
@@ -1441,6 +1630,305 @@
 
         document.getElementById('dash-search').addEventListener('input', () => { paginaInventario = 1; filtrarYOrdenarDashboard(); });
         document.getElementById('dash-orden').addEventListener('change', () => { paginaInventario = 1; filtrarYOrdenarDashboard(); });
+
+        // ----------------------------------------------------
+        // AJUSTAR INVENTARIO (un producto a la vez)
+        // ----------------------------------------------------
+        function construirMovimiento(tipo, codigo, producto, cantidad, stockAnterior, stockNuevo, motivo) {
+            return {
+                fecha: firebase.firestore.FieldValue.serverTimestamp(),
+                fechaIso: new Date().toISOString().slice(0, 10),
+                tipo, codigo, producto, cantidad, stockAnterior, stockNuevo,
+                motivo: motivo || '',
+                cajero: usuarioEnTurno ? usuarioEnTurno.nombre : 'Desconocido',
+                creadoPor: auth.currentUser ? auth.currentUser.email : null
+            };
+        }
+
+        function procesarBuscadorAjuste() {
+            const inputCod = document.getElementById('ajust-codigo').value.trim().toLowerCase();
+            if (Object.keys(inventarioDict).length === 0) return mostrarToast('Todavía no hay productos cargados en el catálogo.', 'error');
+            if (!inputCod) return;
+            productoAjusteActual = inventarioDict[inputCod] || null;
+            const labelDesc = document.getElementById('ajust-desc'), inputActual = document.getElementById('ajust-actual'),
+                inputDelta = document.getElementById('ajust-delta'), inputNueva = document.getElementById('ajust-nueva'),
+                inputMotivo = document.getElementById('ajust-motivo'), btnGuardar = document.getElementById('btn-realizar-ajuste');
+            if (productoAjusteActual) {
+                labelDesc.textContent = productoAjusteActual.producto;
+                labelDesc.style.color = 'var(--morado-oscuro)'; labelDesc.style.fontWeight = 'bold';
+                inputActual.value = productoAjusteActual.stock || 0;
+                inputDelta.disabled = false; inputNueva.disabled = false; inputMotivo.disabled = false; btnGuardar.disabled = false;
+                inputDelta.value = ''; inputNueva.value = inputActual.value;
+                inputDelta.focus();
+            } else {
+                labelDesc.textContent = 'Producto no encontrado.'; labelDesc.style.color = 'var(--rojo-corazon)'; labelDesc.style.fontWeight = 'normal';
+                inputActual.value = 0;
+                inputDelta.disabled = true; inputNueva.disabled = true; inputMotivo.disabled = true; btnGuardar.disabled = true;
+            }
+        }
+
+        function sincronizarAjusteDelta() {
+            const actual = parseInt(document.getElementById('ajust-actual').value) || 0;
+            const inputDelta = document.getElementById('ajust-delta');
+            if (inputDelta.value !== '' && inputDelta.value !== '-') {
+                document.getElementById('ajust-nueva').value = actual + (parseInt(inputDelta.value) || 0);
+            }
+        }
+        function sincronizarAjusteAbsoluto() {
+            const actual = parseInt(document.getElementById('ajust-actual').value) || 0;
+            const inputNueva = document.getElementById('ajust-nueva');
+            if (inputNueva.value !== '') {
+                const dif = (parseInt(inputNueva.value) || 0) - actual;
+                // <input type="number"> rechaza un "+" explícito (lo deja en blanco) — un
+                // positivo ya se ve sin signo, alcanza con mostrar el negativo con "-".
+                document.getElementById('ajust-delta').value = String(dif);
+            }
+        }
+        document.getElementById('ajust-delta').addEventListener('input', sincronizarAjusteDelta);
+        document.getElementById('ajust-nueva').addEventListener('input', sincronizarAjusteAbsoluto);
+        document.getElementById('ajust-codigo').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); procesarBuscadorAjuste(); } });
+
+        function ejecutarAjusteInventario() {
+            if (!usuarioEnTurno) { abrirModalLogin(true); return; }
+            if (!productoAjusteActual) return;
+            const actual = productoAjusteActual.stock || 0;
+            const nueva = parseInt(document.getElementById('ajust-nueva').value);
+            const motivo = document.getElementById('ajust-motivo').value.trim();
+            if (isNaN(nueva) || nueva < 0) return mostrarToast('La nueva cantidad total no es válida.', 'error');
+            const delta = nueva - actual;
+            if (delta === 0) return mostrarToast('No hay cambios en la cantidad.', 'error');
+
+            const batch = db.batch();
+            batch.update(db.collection('productos').doc(productoAjusteActual.codigo), { stock: nueva });
+            batch.set(db.collection('movimientos').doc(), construirMovimiento(delta > 0 ? 'Entrada' : 'Salida', productoAjusteActual.codigo, productoAjusteActual.producto, Math.abs(delta), actual, nueva, motivo));
+            batch.commit().then(() => mostrarToast('Ajuste guardado.', 'exito'))
+                .catch(err => mostrarToast('No se pudo guardar el ajuste: ' + err.message, 'error'));
+
+            document.getElementById('ajust-codigo').value = '';
+            document.getElementById('ajust-desc').textContent = 'Esperando producto...';
+            document.getElementById('ajust-desc').style.color = 'gray'; document.getElementById('ajust-desc').style.fontWeight = 'normal';
+            document.getElementById('ajust-actual').value = '0';
+            document.getElementById('ajust-delta').value = ''; document.getElementById('ajust-nueva').value = ''; document.getElementById('ajust-motivo').value = '';
+            document.getElementById('ajust-delta').disabled = true; document.getElementById('ajust-nueva').disabled = true; document.getElementById('ajust-motivo').disabled = true;
+            document.getElementById('btn-realizar-ajuste').disabled = true;
+            productoAjusteActual = null;
+            document.getElementById('ajust-codigo').focus();
+        }
+
+        // ----------------------------------------------------
+        // PEDIDOS Y MOVIMIENTOS + LISTA PROVEEDOR
+        // ----------------------------------------------------
+        function renderizarMovimientos() {
+            const contenedor = document.getElementById('lista-movimientos');
+            if (!contenedor) return;
+            const filtroF = document.getElementById('filtro-fecha-movimientos').value;
+            const filtrados = filtroF ? movimientosMemoria.filter(m => m.fechaIso === filtroF) : movimientosMemoria;
+
+            if (filtrados.length === 0) {
+                contenedor.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:gray;">No hay movimientos para esta fecha.</td></tr>';
+                return;
+            }
+            contenedor.innerHTML = '';
+            filtrados.forEach(mov => {
+                let claseTipo = 'bg-ajuste', textoTipo = 'AJUSTE';
+                if (mov.tipo === 'Salida') { claseTipo = 'bg-salida'; textoTipo = 'SALIDA'; }
+                else if (mov.tipo === 'Entrada') { claseTipo = 'bg-entrada'; textoTipo = 'ENTRADA'; }
+                const horaTexto = mov.fecha && mov.fecha.toDate ? mov.fecha.toDate().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                const nombreTruncado = mov.producto.length > 40 ? mov.producto.slice(0, 40) + '...' : mov.producto;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="color:gray; font-size:0.8rem; white-space:nowrap;">${escapeHtml(horaTexto)}</td>
+                    <td class="td-producto"><span class="td-truncado" title="${escapeHtml(mov.producto)}">${escapeHtml(nombreTruncado)}</span><small style="color:gray;">Cod: ${escapeHtml(mov.codigo)}</small></td>
+                    <td style="text-align:center; font-weight:bold; color:#555;">${mov.stockAnterior}</td>
+                    <td style="text-align:center;"><span class="badge-tipo ${claseTipo}">${textoTipo}</span></td>
+                    <td style="text-align:center; font-weight:bold;">${mov.cantidad}</td>
+                    <td style="text-align:center; font-weight:bold; color:var(--morado-oscuro);">${mov.stockNuevo}</td>
+                    <td style="text-align:center; color:gray; font-size:0.75rem;">${escapeHtml(mov.cajero || '-')}</td>
+                    <td style="text-align:center;"></td>
+                `;
+                const btnPedir = document.createElement('button');
+                btnPedir.className = 'btn-add-pedido';
+                btnPedir.title = 'Añadir a proveedor';
+                btnPedir.textContent = '+';
+                btnPedir.onclick = () => agregarAlPedido(mov.codigo, mov.producto);
+                tr.lastElementChild.appendChild(btnPedir);
+                contenedor.appendChild(tr);
+            });
+        }
+        document.getElementById('filtro-fecha-movimientos').addEventListener('change', renderizarMovimientos);
+        document.getElementById('btn-limpiar-filtro-mov').addEventListener('click', () => { document.getElementById('filtro-fecha-movimientos').value = ''; renderizarMovimientos(); });
+
+        function agregarAlPedido(codigo, nombre) {
+            db.collection('faltantes').doc(codigo).set({
+                codigo, nombre, cantidad: firebase.firestore.FieldValue.increment(1)
+            }, { merge: true }).then(() => mostrarToast('Agregado a la lista de proveedor.', 'exito'))
+                .catch(err => mostrarToast('No se pudo agregar: ' + err.message, 'error'));
+        }
+        function modificarCantPedido(codigo, valorStr) {
+            const v = parseInt(valorStr);
+            db.collection('faltantes').doc(codigo).set({ cantidad: isNaN(v) || v < 1 ? 1 : v }, { merge: true })
+                .catch(err => mostrarToast('No se pudo actualizar: ' + err.message, 'error'));
+        }
+        function eliminarDelPedido(codigo) {
+            db.collection('faltantes').doc(codigo).delete().catch(err => mostrarToast('No se pudo quitar: ' + err.message, 'error'));
+        }
+        function renderizarFaltantes() {
+            const c = document.getElementById('lista-proveedor');
+            if (!c) return;
+            if (faltantesMemoria.length === 0) { c.innerHTML = '<div style="text-align:center; color:gray;">Lista vacía.</div>'; return; }
+            c.innerHTML = '';
+            faltantesMemoria.forEach(i => {
+                const div = document.createElement('div');
+                div.className = 'faltante-item';
+                const infoDiv = document.createElement('div');
+                infoDiv.style.cssText = 'flex-grow:1; min-width:0;';
+                infoDiv.innerHTML = `<strong style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;" title="${escapeHtml(i.nombre)}">${escapeHtml(i.nombre)}</strong><small style="color:gray;">${escapeHtml(i.codigo)}</small>`;
+                const controlesDiv = document.createElement('div');
+                controlesDiv.style.cssText = 'display:flex; align-items:center; gap:6px;';
+                const inputCant = document.createElement('input');
+                inputCant.type = 'number'; inputCant.className = 'input-cant-pedido'; inputCant.value = i.cantidad;
+                inputCant.onchange = () => modificarCantPedido(i.codigo, inputCant.value);
+                const btnQuitar = document.createElement('button');
+                btnQuitar.textContent = '✖';
+                btnQuitar.style.cssText = 'background:var(--rojo-corazon); color:white; border:none; border-radius:4px; padding:4px 6px; cursor:pointer;';
+                btnQuitar.onclick = () => eliminarDelPedido(i.codigo);
+                controlesDiv.appendChild(inputCant); controlesDiv.appendChild(btnQuitar);
+                div.appendChild(infoDiv); div.appendChild(controlesDiv);
+                c.appendChild(div);
+            });
+        }
+        function copiarListaProveedor() {
+            if (faltantesMemoria.length === 0) return;
+            let t = '*💊 PEDIDO FARMACIA*\n\n';
+            faltantesMemoria.forEach(i => { t += `- ${i.nombre} (Cod: ${i.codigo}) -> *${i.cantidad} u*\n`; });
+            navigator.clipboard.writeText(t).then(() => mostrarToast('Lista copiada.', 'exito')).catch(() => mostrarToast('No se pudo copiar.', 'error'));
+        }
+
+        // ----------------------------------------------------
+        // HISTORIAL DEL TURNO (ventas sin cortar)
+        // ----------------------------------------------------
+        function renderizarHistorialDia() {
+            const c = document.getElementById('historial-dia-list');
+            if (!c) return;
+            const ventasTurno = ventasDelMes.filter(v => !v.cortada)
+                .sort((a, b) => (b.fecha && b.fecha.toDate ? b.fecha.toDate() : 0) - (a.fecha && a.fecha.toDate ? a.fecha.toDate() : 0));
+            if (ventasTurno.length === 0) {
+                c.innerHTML = '<p style="text-align:center; color:gray; margin-top:30px;">Todavía no hay ventas en este turno.</p>';
+                document.getElementById('total-dia-historial').textContent = '$0';
+                return;
+            }
+            let sum = 0;
+            c.innerHTML = ventasTurno.map(v => {
+                sum += v.total || 0;
+                const horaTexto = v.fecha && v.fecha.toDate ? v.fecha.toDate().toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+                const detalle = (v.items || []).map(i => `${i.cantidad}x ${escapeHtml(i.producto)}`).join(', ');
+                const metodoTexto = v.metodoPago === 'tarjeta' ? '💳 Tarjeta' : '💵 Efectivo';
+                return `<div style="background:var(--blanco); border-left:5px solid var(--verde-exito); padding:12px 15px; margin-bottom:10px; border-radius:8px;">
+                    <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                        <span style="font-size:0.8rem; color:gray;">🕒 ${horaTexto} · ${metodoTexto}${v.cajero ? ' · 👤 ' + escapeHtml(v.cajero) : ''}${v.clienteNombre ? ' · ' + escapeHtml(v.clienteNombre) : ''}</span>
+                        <strong style="color:var(--verde-exito);">$${(v.total || 0).toLocaleString('es-CL')}</strong>
+                    </div>
+                    <div style="margin-top:6px; font-size:0.9rem;">${detalle}</div>
+                </div>`;
+            }).join('');
+            document.getElementById('total-dia-historial').textContent = '$' + sum.toLocaleString('es-CL');
+        }
+
+        // ----------------------------------------------------
+        // CORTE DE CAJA
+        // ----------------------------------------------------
+        let totalVentasCorteNum = 0;
+        function renderizarCorte() {
+            const ventasTurno = ventasDelMes.filter(v => !v.cortada);
+            let totalEfectivo = 0, totalTarjeta = 0;
+            totalVentasCorteNum = 0;
+            ventasTurno.forEach(v => { totalVentasCorteNum += v.total || 0; if (v.metodoPago === 'efectivo') totalEfectivo += v.total || 0; else totalTarjeta += v.total || 0; });
+            document.getElementById('corte-cant-ventas').textContent = ventasTurno.length;
+            document.getElementById('corte-total-efectivo').textContent = '$' + totalEfectivo.toLocaleString('es-CL');
+            document.getElementById('corte-total-tarjeta').textContent = '$' + totalTarjeta.toLocaleString('es-CL');
+            document.getElementById('corte-total-ventas').textContent = '$' + totalVentasCorteNum.toLocaleString('es-CL');
+            calcularCorte();
+        }
+        function calcularCorte() {
+            const retiro = parseFloat(document.getElementById('corte-retiro').value) || 0;
+            const efectivo = parseFloat(document.getElementById('corte-efectivo').value) || 0;
+            const tarjeta = parseFloat(document.getElementById('corte-tarjeta').value) || 0;
+            const otros = parseFloat(document.getElementById('corte-otros').value) || 0;
+            const subtotal = retiro + efectivo + tarjeta + otros;
+            document.getElementById('corte-subtotal').textContent = '$' + subtotal.toLocaleString('es-CL');
+            const diferencia = subtotal - totalVentasCorteNum;
+            const difEl = document.getElementById('corte-diferencia'), boxDif = document.getElementById('corte-diferencia-box');
+            if (diferencia < 0) { difEl.style.color = '#d22027'; boxDif.style.borderColor = '#d22027'; difEl.textContent = '- $' + Math.abs(diferencia).toLocaleString('es-CL') + ' (Falta)'; }
+            else if (diferencia === 0) { difEl.style.color = '#10b981'; boxDif.style.borderColor = '#10b981'; difEl.textContent = '$0 (Cuadra exacto)'; }
+            else { difEl.style.color = '#f59e0b'; boxDif.style.borderColor = '#f59e0b'; difEl.textContent = '+ $' + Math.abs(diferencia).toLocaleString('es-CL') + ' (Sobra)'; }
+        }
+        ['corte-retiro', 'corte-efectivo', 'corte-tarjeta', 'corte-otros'].forEach(id => document.getElementById(id).addEventListener('input', calcularCorte));
+
+        function guardarCorte() {
+            if (!usuarioEnTurno) return mostrarToast('Sesión de turno inválida.', 'error');
+            if (!confirm('¿Guardar este corte? Esto cerrará tu turno actual.')) return;
+            const retiro = parseFloat(document.getElementById('corte-retiro').value) || 0;
+            const efectivo = parseFloat(document.getElementById('corte-efectivo').value) || 0;
+            const tarjeta = parseFloat(document.getElementById('corte-tarjeta').value) || 0;
+            const otros = parseFloat(document.getElementById('corte-otros').value) || 0;
+            const subtotal = retiro + efectivo + tarjeta + otros;
+            const diferencia = subtotal - totalVentasCorteNum;
+            const ventasTurno = ventasDelMes.filter(v => !v.cortada);
+            const corteRef = db.collection('cortes').doc();
+            const TAM_LOTE = 450;
+            (async () => {
+                try {
+                    let batch = db.batch();
+                    batch.set(corteRef, {
+                        fecha: firebase.firestore.FieldValue.serverTimestamp(),
+                        cajero: usuarioEnTurno.nombre,
+                        creadoPor: auth.currentUser ? auth.currentUser.email : null,
+                        cantidadVentas: ventasTurno.length,
+                        totalVentas: totalVentasCorteNum,
+                        efectivo, tarjeta, retiro, otros,
+                        subtotalDeclarado: subtotal,
+                        diferencia
+                    });
+                    let enLote = 1;
+                    for (const v of ventasTurno) {
+                        batch.update(db.collection('ventas').doc(v.id), { cortada: true });
+                        enLote++;
+                        if (enLote >= TAM_LOTE) { await batch.commit(); batch = db.batch(); enLote = 0; }
+                    }
+                    await batch.commit();
+                    mostrarToast('Corte guardado. Tu turno se cerró.', 'exito');
+                    ['corte-retiro', 'corte-efectivo', 'corte-tarjeta', 'corte-otros'].forEach(id => document.getElementById(id).value = '');
+                    usuarioEnTurno = null;
+                    document.getElementById('btn-usuario-actual').innerHTML = '👤 Ingresar';
+                    cambiarModulo('pos');
+                    abrirModalLogin(true);
+                } catch (err) {
+                    mostrarToast('No se pudo guardar el corte: ' + err.message, 'error');
+                }
+            })();
+        }
+        function abrirModalHistorialCortes() { document.getElementById('modal-historial-cortes').style.display = 'flex'; renderizarHistorialCortes(); }
+        function renderizarHistorialCortes() {
+            const c = document.getElementById('lista-historial-cortes');
+            if (!c) return;
+            if (cortesMemoria.length === 0) { c.innerHTML = '<div style="text-align:center; padding:20px; color:gray;">No hay cortes registrados.</div>'; return; }
+            c.innerHTML = cortesMemoria.map(corte => {
+                const colorDif = corte.diferencia < 0 ? '#d22027' : (corte.diferencia > 0 ? '#f59e0b' : '#10b981');
+                const fechaTexto = corte.fecha && corte.fecha.toDate ? corte.fecha.toDate().toLocaleString('es-CL') : 'Sincronizando...';
+                return `<div style="border: 1px solid var(--gris-claro); padding: 12px; margin-bottom: 12px; border-radius: 8px; border-left: 5px solid ${colorDif};">
+                    <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:5px;">
+                        <strong style="font-size:1.05rem; color:var(--morado-oscuro);">${escapeHtml(fechaTexto)}</strong>
+                        <span style="color:gray;">Cajero: <strong style="color:var(--texto-oscuro);">${escapeHtml(corte.cajero || '-')}</strong></span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:0.95rem;">
+                        <span>Ventas Turno: <strong>$${(corte.totalVentas || 0).toLocaleString('es-CL')}</strong></span>
+                        <span>Declarado Total: <strong>$${(corte.subtotalDeclarado || 0).toLocaleString('es-CL')}</strong></span>
+                        <strong style="color:${colorDif}">Dif: $${(corte.diferencia || 0).toLocaleString('es-CL')}</strong>
+                    </div>
+                </div>`;
+            }).join('');
+        }
 
         // ----------------------------------------------------
         // SERVICE WORKER (instalación PWA + auto-actualización)
