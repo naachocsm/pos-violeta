@@ -280,19 +280,19 @@
         <div class="header-right">
             <button id="btn-usuario-actual" class="btn-usuario-header" onclick="abrirModalLogin()">👤 Ingresar</button>
             <button class="header-icon-btn" title="Vademécum" onclick="cambiarModulo('vademecum')">💊</button>
+            <button class="header-icon-btn solo-admin oculto" id="btn-header-inventario" title="Actualizar Inventario" onclick="cambiarModulo('inventario')">⚙️</button>
         </div>
     </header>
 
     <div class="main-tabs">
         <button class="main-tab-btn activo" id="btn-mod-pos" onclick="cambiarModulo('pos')">🛒 Venta</button>
         <button class="main-tab-btn" id="btn-mod-dashboard" onclick="cambiarModulo('dashboard')">📊 Inventario</button>
-        <button class="main-tab-btn tab-admin oculto" id="btn-mod-ajustes" onclick="cambiarModulo('ajustes')">✏️ Ajustar Inventario</button>
-        <button class="main-tab-btn tab-admin oculto" id="btn-mod-pedidos" onclick="cambiarModulo('pedidos')">📦 Pedidos y Movimientos</button>
+        <button class="main-tab-btn solo-admin oculto" id="btn-mod-ajustes" onclick="cambiarModulo('ajustes')">✏️ Ajustar Inventario</button>
+        <button class="main-tab-btn solo-admin oculto" id="btn-mod-pedidos" onclick="cambiarModulo('pedidos')">📦 Pedidos y Movimientos</button>
         <button class="main-tab-btn" id="btn-mod-historial-dia" onclick="cambiarModulo('historial-dia')">📅 Historial</button>
-        <button class="main-tab-btn tab-admin oculto" id="btn-mod-corte" onclick="cambiarModulo('corte')">✂️ Corte</button>
-        <button class="main-tab-btn tab-admin oculto" id="btn-mod-fidelizacion" onclick="cambiarModulo('fidelizacion')">👥 Clientes</button>
-        <button class="main-tab-btn tab-admin oculto" id="btn-mod-inventario" onclick="cambiarModulo('inventario')">⚙️ Actualizar Inventario</button>
-        <button class="main-tab-btn tab-admin oculto" id="btn-mod-configuracion" onclick="cambiarModulo('configuracion')" style="margin-left:auto;">🛠️ Configuración</button>
+        <button class="main-tab-btn solo-admin oculto" id="btn-mod-corte" onclick="cambiarModulo('corte')">✂️ Corte</button>
+        <button class="main-tab-btn solo-admin oculto" id="btn-mod-fidelizacion" onclick="cambiarModulo('fidelizacion')">👥 Clientes</button>
+        <button class="main-tab-btn solo-admin oculto" id="btn-mod-configuracion" onclick="cambiarModulo('configuracion')" style="margin-left:auto;">🛠️ Configuración</button>
     </div>
 
     <div class="reloj-flotante"><span id="reloj-simple">-- - --- &nbsp;&nbsp; --:-- --</span></div>
@@ -1040,6 +1040,14 @@
             const u = usuariosMemoria.find(x => x.id === idSel);
             if (u && u.pin === pinIngr) {
                 usuarioEnTurno = u;
+                // Migración: personal creado antes de que existieran los roles no
+                // tiene 'rol' guardado. Si nadie en el padrón es admin todavía,
+                // quien entra ahora queda admin -- si no, nadie podría llegar a
+                // Configuración para asignarle el primer admin a alguien.
+                if (!usuariosMemoria.some(x => x.rol === 'admin')) {
+                    usuarioEnTurno.rol = 'admin';
+                    db.collection('usuarios').doc(usuarioEnTurno.id).update({ rol: 'admin' }).catch(() => {});
+                }
                 document.getElementById('btn-usuario-actual').innerHTML = textoBotonUsuario(usuarioEnTurno);
                 document.getElementById('modal-login').style.display = 'none';
                 aplicarVisibilidadPorRol();
@@ -1125,7 +1133,7 @@
 
         function aplicarVisibilidadPorRol() {
             const admin = esAdmin();
-            document.querySelectorAll('.tab-admin').forEach(btn => btn.classList.toggle('oculto', !admin));
+            document.querySelectorAll('.solo-admin').forEach(btn => btn.classList.toggle('oculto', !admin));
             if (!admin) {
                 const moduloActivo = document.querySelector('.app-modulo.activo');
                 if (moduloActivo && MODULOS_SOLO_ADMIN.includes(moduloActivo.id.replace('modulo-', ''))) cambiarModulo('pos');
