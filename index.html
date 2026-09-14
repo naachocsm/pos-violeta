@@ -299,6 +299,7 @@
         <button class="main-tab-btn" id="btn-mod-pedidos" onclick="cambiarModulo('pedidos')">📦 Pedidos y Movimientos</button>
         <button class="main-tab-btn" id="btn-mod-historial-dia" onclick="cambiarModulo('historial-dia')">📅 Historial</button>
         <button class="main-tab-btn" id="btn-mod-corte" onclick="cambiarModulo('corte')">✂️ Corte</button>
+        <button class="main-tab-btn" id="btn-mod-fidelizacion" onclick="cambiarModulo('fidelizacion')">👥 Clientes</button>
         <button class="main-tab-btn" id="btn-mod-vademecum" onclick="cambiarModulo('vademecum')">💊 Vademécum</button>
         <button class="main-tab-btn" id="btn-mod-inventario" onclick="cambiarModulo('inventario')">⚙️ Actualizar Inventario</button>
         <button class="main-tab-btn" id="btn-mod-configuracion" onclick="cambiarModulo('configuracion')" style="margin-left:auto;">🛠️ Configuración</button>
@@ -630,6 +631,51 @@
             </div>
         </div>
 
+        <!-- MÓDULO: CLIENTES (Fidelización) -->
+        <div id="modulo-fidelizacion" class="app-modulo">
+            <div class="fid-layout">
+                <div class="fid-sidebar">
+                    <h2 style="color:var(--morado-oscuro); margin:0 0 5px 0; font-size:1.2rem;">👥 Clientes</h2>
+                    <input type="text" id="buscar-cliente" class="buscador-input" placeholder="Buscar por RUT o nombre..." style="margin:15px 0;">
+                    <button class="btn-nuevo" onclick="mostrarFormularioNuevoCliente()">+ Registrar Cliente</button>
+                    <div class="lista-clientes" id="lista-clientes"></div>
+                </div>
+                <div class="fid-main">
+                    <div id="vista-formulario-cliente" class="fid-card oculto">
+                        <h2 style="color:var(--morado-oscuro); margin-top:0;">Registro de Cliente</h2>
+                        <div class="form-grid">
+                            <input type="text" id="reg-rut" placeholder="RUT (ej: 19123456-7)">
+                            <input type="text" id="reg-nombre" placeholder="Nombres">
+                            <input type="text" id="reg-apellido" placeholder="Apellidos">
+                            <input type="text" id="reg-telefono" placeholder="Teléfono">
+                            <textarea id="reg-notas" placeholder="Notas adicionales (ej: prefiere genéricos, alergias, etc.)" style="grid-column: span 2; resize: vertical; min-height: 80px; font-family: inherit; padding:10px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;"></textarea>
+                        </div>
+                        <button id="btn-guardar-cliente" class="btn-nuevo" style="margin-top: 20px;" onclick="guardarCliente()">Guardar Cliente</button>
+                    </div>
+                    <div id="vista-perfil-cliente" class="oculto">
+                        <div class="fid-card" style="position: relative;">
+                            <div style="position: absolute; top: 20px; right: 20px; display: flex; gap: 8px;">
+                                <button onclick="eliminarClienteActual()" style="background: #ffebee; color: #d22027; border: 1px solid #d22027; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem;">🗑️ Eliminar</button>
+                                <button onclick="editarClienteActual()" style="background: var(--morado-pastel); color: var(--morado-oscuro); border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.8rem;">✏️ Editar</button>
+                            </div>
+                            <h2 id="perfil-nombre" style="margin-top: 0; padding-right: 150px; color:var(--morado-oscuro);">Nombre</h2>
+                            <p style="margin: 5px 0; color:#555;"><strong>RUT:</strong> <span id="perfil-rut"></span></p>
+                            <div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--gris-claro); font-size: 0.9rem; color: #555;">
+                                <strong>📝 Notas:</strong> <span id="perfil-notas"></span>
+                            </div>
+                        </div>
+                        <div class="fid-card">
+                            <h3 style="margin-top:0; color: var(--morado-oscuro);">Historial de Compras</h3>
+                            <table class="fid-table"><tbody id="tabla-historial-cliente"></tbody></table>
+                        </div>
+                    </div>
+                    <div id="vista-inicio-clientes" style="text-align:center; color:gray; margin-top:50px;">
+                        <h2>Selecciona o registra un cliente</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- MÓDULO: VADEMÉCUM -->
         <div id="modulo-vademecum" class="app-modulo">
             <div class="container-interno">
@@ -688,6 +734,25 @@
                         <div style="flex: 1; min-width: 250px;">
                             <div id="lista-usuarios-config" style="background: var(--lila-fondo); padding: 15px; border-radius: 8px; max-height: 300px; overflow-y: auto; border: 1px solid var(--morado-pastel);"></div>
                         </div>
+                    </div>
+
+                    <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; color: gray; font-size:1.1rem; margin-top:35px;">Respaldo de seguridad</h3>
+                    <p style="font-size:0.85rem; color:gray; margin-top:-5px;">El inventario y las ventas viven en la base de datos compartida (no solo en este dispositivo). Aun así, descarga un respaldo de vez en cuando por si necesitas recuperar el catálogo ante un error.</p>
+                    <div class="respaldo-box">
+                        <h3>📊 Descargar catálogo en Excel</h3>
+                        <p style="color:gray; margin-top:0;">Genera un archivo <code>.csv</code> con código, nombre, precio, stock y departamento actuales.</p>
+                        <button class="btn-secundario" onclick="exportarCsv()">Descargar catálogo (.csv)</button>
+                    </div>
+                    <div class="respaldo-box">
+                        <h3>⬇️ Descargar respaldo</h3>
+                        <p style="color:gray; margin-top:0;">Genera un archivo <code>.json</code> con el inventario completo y el historial de ventas.</p>
+                        <button class="btn-secundario" onclick="exportarRespaldo()">Descargar respaldo ahora</button>
+                    </div>
+                    <div class="respaldo-box">
+                        <h3>⬆️ Restaurar catálogo</h3>
+                        <p style="color:gray; margin-top:0;">Actualiza el inventario con los productos de un respaldo .json (no borra nada, solo actualiza/agrega).</p>
+                        <label class="file-label" for="input-respaldo">📂 Elegir archivo de respaldo (.json)</label>
+                        <input type="file" id="input-respaldo" accept="application/json" style="display:none" onchange="importarRespaldo(event)">
                     </div>
                 </div>
             </div>
@@ -751,6 +816,8 @@
         let productoAjusteActual = null;
         let vademecumMemoria = [];
         let filtroVademecumActivo = 'Todos';
+        let clienteActual = null;
+        let editandoRut = null;
 
         let filasActuales = [];
         let paginaInventario = 1;
@@ -878,6 +945,7 @@
 
             db.collection('clientes').onSnapshot(snap => {
                 clientesMemoria = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderizarListaClientes();
             }, err => mostrarToast('Error leyendo clientes: ' + err.message, 'error'));
 
             db.collection('usuarios').onSnapshot(snap => {
@@ -2267,6 +2335,235 @@
             });
         }
         document.getElementById('buscador-vademecum').addEventListener('input', aplicarFiltrosBusquedaVademecum);
+
+        // ----------------------------------------------------
+        // CLIENTES / FIDELIZACIÓN (registro completo, editar y eliminar)
+        // ----------------------------------------------------
+        function mostrarFormularioNuevoCliente() {
+            editandoRut = null;
+            document.getElementById('vista-inicio-clientes').classList.add('oculto');
+            document.getElementById('vista-perfil-cliente').classList.add('oculto');
+            document.getElementById('vista-formulario-cliente').classList.remove('oculto');
+            document.getElementById('btn-guardar-cliente').textContent = 'Guardar Cliente';
+            ['reg-rut', 'reg-nombre', 'reg-apellido', 'reg-telefono', 'reg-notas'].forEach(id => { document.getElementById(id).value = ''; });
+            document.getElementById('reg-rut').disabled = false;
+        }
+
+        function renderizarListaClientes() {
+            const cont = document.getElementById('lista-clientes');
+            if (!cont) return;
+            const termino = document.getElementById('buscar-cliente').value.trim();
+            const filtrados = clientesMemoria.filter(c => clienteCoincide(c, termino));
+            if (filtrados.length === 0) {
+                cont.innerHTML = '<p style="text-align:center; color:gray; padding:15px;">' + (termino ? 'Sin clientes que coincidan.' : 'Sin clientes registrados todavía.') + '</p>';
+                return;
+            }
+            cont.innerHTML = filtrados.map(c => `
+                <div class="cliente-item" data-id="${escapeHtml(c.id)}">
+                    <strong>${escapeHtml(c.nombre)} ${escapeHtml(c.apellido || '')}</strong><br>
+                    <small>${escapeHtml(c.rut)} · ⭐ ${c.puntos || 0} pts</small>
+                </div>`).join('');
+            cont.querySelectorAll('.cliente-item').forEach(el => { el.onclick = () => verPerfilCliente(el.dataset.id); });
+        }
+        document.getElementById('buscar-cliente').addEventListener('input', renderizarListaClientes);
+
+        function guardarCliente() {
+            const rutInput = document.getElementById('reg-rut').value.trim();
+            const nombre = document.getElementById('reg-nombre').value.trim();
+            const apellido = document.getElementById('reg-apellido').value.trim();
+            const telefono = document.getElementById('reg-telefono').value.trim();
+            const notas = document.getElementById('reg-notas').value.trim();
+            if (!rutInput || !nombre) return mostrarToast('RUT y nombre son obligatorios.', 'error');
+            const rutId = normalizarRut(rutInput);
+            if (!rutId) return mostrarToast('El RUT no es válido.', 'error');
+
+            if (editandoRut) {
+                if (rutId !== editandoRut && clientesMemoria.some(c => c.id === rutId)) return mostrarToast('El nuevo RUT ya está registrado en otro cliente.', 'error');
+                const rutViejo = editandoRut;
+                (async () => {
+                    try {
+                        if (rutId !== rutViejo) {
+                            const anterior = clientesMemoria.find(c => c.id === rutViejo);
+                            const batch = db.batch();
+                            batch.set(db.collection('clientes').doc(rutId), {
+                                rut: rutInput, nombre, apellido, telefono, notas,
+                                puntos: anterior ? (anterior.puntos || 0) : 0,
+                                creadoEn: (anterior && anterior.creadoEn) ? anterior.creadoEn : firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            batch.delete(db.collection('clientes').doc(rutViejo));
+                            await batch.commit();
+                            for (let i = 0; i < 5; i++) {
+                                if (clientesPos[i] && clientesPos[i].id === rutViejo) {
+                                    clientesPos[i] = { ...clientesPos[i], id: rutId, rut: rutInput, nombre, apellido, telefono, notas };
+                                    if (i === carritoActivo) actualizarUICliente();
+                                }
+                            }
+                        } else {
+                            await db.collection('clientes').doc(rutId).set({ rut: rutInput, nombre, apellido, telefono, notas }, { merge: true });
+                        }
+                        mostrarToast('Cliente actualizado.', 'exito');
+                        editandoRut = null;
+                        verPerfilCliente(rutId);
+                    } catch (err) {
+                        mostrarToast('No se pudo actualizar: ' + err.message, 'error');
+                    }
+                })();
+                return;
+            }
+
+            if (clientesMemoria.some(c => c.id === rutId)) return mostrarToast('Ya existe un cliente con ese RUT.', 'error');
+            db.collection('clientes').doc(rutId).set({
+                rut: rutInput, nombre, apellido, telefono, notas,
+                puntos: 0, creadoEn: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => { mostrarToast('Cliente registrado.', 'exito'); verPerfilCliente(rutId); })
+                .catch(err => mostrarToast('No se pudo registrar: ' + err.message, 'error'));
+        }
+
+        async function verPerfilCliente(rutId) {
+            const cliente = clientesMemoria.find(c => c.id === rutId);
+            if (!cliente) return;
+            clienteActual = cliente;
+            document.getElementById('vista-inicio-clientes').classList.add('oculto');
+            document.getElementById('vista-formulario-cliente').classList.add('oculto');
+            document.getElementById('vista-perfil-cliente').classList.remove('oculto');
+            document.getElementById('perfil-nombre').innerHTML = `${escapeHtml(cliente.nombre)} ${escapeHtml(cliente.apellido || '')} <span style="color:var(--naranja-pendiente); font-size:0.9rem;">⭐ ${cliente.puntos || 0} pts</span>`;
+            document.getElementById('perfil-rut').textContent = cliente.rut;
+            document.getElementById('perfil-notas').textContent = cliente.notas ? cliente.notas : 'Sin notas adicionales.';
+
+            const tbody = document.getElementById('tabla-historial-cliente');
+            tbody.innerHTML = '<tr><td style="color:gray;">Cargando historial...</td></tr>';
+            try {
+                const snap = await db.collection('ventas').where('clienteRut', '==', rutId).orderBy('fecha', 'desc').limit(50).get();
+                renderizarHistorialCompras(snap.docs.map(d => d.data()));
+            } catch (err) {
+                tbody.innerHTML = `<tr><td style="color:var(--rojo-corazon);">No se pudo cargar el historial: ${escapeHtml(err.message)}</td></tr>`;
+            }
+        }
+
+        function renderizarHistorialCompras(ventasCliente) {
+            const tbody = document.getElementById('tabla-historial-cliente');
+            if (ventasCliente.length === 0) { tbody.innerHTML = '<tr><td style="color:gray;">Sin compras registradas todavía.</td></tr>'; return; }
+            tbody.innerHTML = ventasCliente.map(v => {
+                const fecha = v.fecha && v.fecha.toDate ? v.fecha.toDate().toLocaleString('es-CL') : 'Sincronizando...';
+                const detalle = (v.items || []).map(i => `${i.cantidad}x ${i.producto}`).join(', ');
+                return `<tr><td>${escapeHtml(fecha)}</td><td>${escapeHtml(detalle)}</td><td>$${(v.total || 0).toLocaleString('es-CL')}</td></tr>`;
+            }).join('');
+        }
+
+        function editarClienteActual() {
+            if (!clienteActual) return;
+            editandoRut = clienteActual.id;
+            document.getElementById('vista-formulario-cliente').classList.remove('oculto');
+            document.getElementById('vista-perfil-cliente').classList.add('oculto');
+            document.getElementById('reg-rut').value = clienteActual.rut;
+            document.getElementById('reg-rut').disabled = false;
+            document.getElementById('reg-nombre').value = clienteActual.nombre || '';
+            document.getElementById('reg-apellido').value = clienteActual.apellido || '';
+            document.getElementById('reg-telefono').value = clienteActual.telefono || '';
+            document.getElementById('reg-notas').value = clienteActual.notas || '';
+            document.getElementById('btn-guardar-cliente').textContent = 'Actualizar Cliente';
+        }
+
+        function eliminarClienteActual() {
+            if (!clienteActual) return;
+            if (!confirm(`¿Eliminar a ${clienteActual.nombre} ${clienteActual.apellido || ''}? Esto no borra sus ventas pasadas, solo su ficha de cliente.`)) return;
+            const idBorrado = clienteActual.id;
+            db.collection('clientes').doc(idBorrado).delete().then(() => {
+                mostrarToast('Cliente eliminado.', 'exito');
+                for (let i = 0; i < 5; i++) { if (clientesPos[i] && clientesPos[i].id === idBorrado) { clientesPos[i] = null; if (i === carritoActivo) actualizarUICliente(); } }
+                clienteActual = null;
+                document.getElementById('vista-perfil-cliente').classList.add('oculto');
+                document.getElementById('vista-inicio-clientes').classList.remove('oculto');
+            }).catch(err => mostrarToast('No se pudo eliminar: ' + err.message, 'error'));
+        }
+
+        // ----------------------------------------------------
+        // RESPALDO (exportar catálogo/ventas, restaurar catálogo)
+        // ----------------------------------------------------
+        function csvEscape(valor) {
+            const str = String(valor ?? '');
+            if (/["\,\n]/.test(str)) return '"' + str.replace(/"/g, '""') + '"';
+            return str;
+        }
+
+        async function exportarCsv() {
+            if (FIREBASE_SIN_CONFIGURAR) return mostrarToast('Falta configurar la base de datos.', 'error');
+            mostrarToast('Generando archivo...', 'info');
+            try {
+                const snap = await db.collection('productos').get();
+                let csv = ['Codigo', 'Producto', 'Precio', 'Stock', 'Departamento'].join(',') + '\n';
+                csv += snap.docs.map(d => {
+                    const p = d.data();
+                    return [d.id, p.producto || '', p.precio || 0, p.stock || 0, p.departamento || ''].map(csvEscape).join(',');
+                }).join('\n');
+                const bom = String.fromCharCode(0xFEFF);
+                const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const fecha = new Date().toISOString().slice(0, 10);
+                const a = document.createElement('a');
+                a.href = url; a.download = `catalogo_violeta_${fecha}.csv`;
+                document.body.appendChild(a); a.click(); a.remove();
+                URL.revokeObjectURL(url);
+                mostrarToast('Archivo descargado.', 'exito');
+            } catch (err) {
+                mostrarToast('Error generando el archivo: ' + err.message, 'error');
+            }
+        }
+
+        async function exportarRespaldo() {
+            if (FIREBASE_SIN_CONFIGURAR) return mostrarToast('Falta configurar la base de datos.', 'error');
+            mostrarToast('Generando respaldo...', 'info');
+            try {
+                const [prodSnap, ventasSnap] = await Promise.all([db.collection('productos').get(), db.collection('ventas').get()]);
+                const respaldo = {
+                    generado: new Date().toISOString(),
+                    inventario: prodSnap.docs.map(d => ({ codigo: d.id, ...d.data() })),
+                    ventas: ventasSnap.docs.map(d => { const v = d.data(); return { ...v, id: d.id, fecha: v.fecha && v.fecha.toDate ? v.fecha.toDate().toISOString() : null }; })
+                };
+                const blob = new Blob([JSON.stringify(respaldo, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const fecha = new Date().toISOString().slice(0, 10);
+                const a = document.createElement('a');
+                a.href = url; a.download = `respaldo_violeta_${fecha}.json`;
+                document.body.appendChild(a); a.click(); a.remove();
+                URL.revokeObjectURL(url);
+                mostrarToast('Respaldo descargado.', 'exito');
+            } catch (err) {
+                mostrarToast('Error generando el respaldo: ' + err.message, 'error');
+            }
+        }
+
+        function importarRespaldo(event) {
+            const archivo = event.target.files[0];
+            if (!archivo) return;
+            if (FIREBASE_SIN_CONFIGURAR) { mostrarToast('Falta configurar la base de datos.', 'error'); event.target.value = ''; return; }
+            const lector = new FileReader();
+            lector.onload = async () => {
+                try {
+                    const datos = JSON.parse(lector.result);
+                    if (!Array.isArray(datos.inventario) || !Array.isArray(datos.ventas)) throw new Error('formato inválido');
+                    if (!confirm(`Este respaldo tiene ${datos.inventario.length.toLocaleString('es-CL')} productos. Se actualizará el catálogo actual con estos datos (no se borra nada). ¿Continuar?`)) return;
+                    const TAM_LOTE = 450;
+                    for (let i = 0; i < datos.inventario.length; i += TAM_LOTE) {
+                        const batch = db.batch();
+                        datos.inventario.slice(i, i + TAM_LOTE).forEach(p => {
+                            if (p.codigo) {
+                                const campos = { producto: p.producto, precio: p.precio, stock: p.stock || 0 };
+                                if (p.departamento) campos.departamento = p.departamento;
+                                batch.set(db.collection('productos').doc(p.codigo), campos, { merge: true });
+                            }
+                        });
+                        await batch.commit();
+                    }
+                    mostrarToast('Catálogo restaurado con éxito.', 'exito');
+                } catch (err) {
+                    mostrarToast('El archivo no es un respaldo válido de este sistema.', 'error');
+                } finally {
+                    event.target.value = '';
+                }
+            };
+            lector.readAsText(archivo);
+        }
 
         // ----------------------------------------------------
         // SERVICE WORKER (instalación PWA + auto-actualización)
