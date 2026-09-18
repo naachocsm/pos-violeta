@@ -13,15 +13,17 @@
     <style>
         :root {
             --morado-oscuro: #4a148c;
-            --morado-vibrante: #8b5cf6;
+            --morado-vibrante: #7c3aed;
             --morado-pastel: #d1c4e9;
             --lila-fondo: #f0eef5;
             --rojo-corazon: #d22027;
             --texto-oscuro: #1a1a1a;
+            --texto-suave: #6b6b6b;
             --blanco: #ffffff;
             --gris-claro: #e5e5e5;
-            --verde-exito: #10b981;
+            --verde-exito: #047857;
             --naranja-pendiente: #f59e0b;
+            --naranja-texto: #92400e;
             --azul-salida: #2563eb;
         }
 
@@ -52,8 +54,8 @@
 
         /* UTILIDADES GLOBALES */
         .buscador-input, .input-generico { width: 100%; padding: 12px; font-size: 16px; border: 2px solid var(--gris-claro); border-radius: 8px; outline: none; box-sizing: border-box; background: var(--blanco); }
-        .buscador-input:focus, .input-generico:focus { border-color: var(--morado-vibrante); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2); }
-        .btn-pendiente { background: var(--naranja-pendiente); color: white; border: none; border-radius: 8px; padding: 12px; font-weight: bold; cursor: pointer; flex: 1; font-size: 0.95rem; touch-action: manipulation; }
+        .buscador-input:focus, .input-generico:focus { border-color: var(--morado-vibrante); box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2); }
+        .btn-pendiente { background: var(--naranja-pendiente); color: var(--texto-oscuro); border: none; border-radius: 8px; padding: 12px; font-weight: bold; cursor: pointer; flex: 1; font-size: 0.95rem; touch-action: manipulation; }
         .btn-concretar { background: var(--verde-exito); color: white; border: none; border-radius: 8px; padding: 12px; font-weight: bold; cursor: pointer; flex: 1; font-size: 0.95rem; touch-action: manipulation; }
         .btn-rojo { background: var(--rojo-corazon); color: white; border: none; border-radius: 8px; padding: 12px; font-weight: bold; cursor: pointer; font-size: 0.95rem; transition: 0.2s; touch-action: manipulation; }
         .btn-rojo:hover { background: #b71c1c; }
@@ -61,7 +63,7 @@
         .btn-pendiente:disabled, .btn-concretar:disabled { background: gray; cursor: not-allowed; opacity: 0.5; }
         .badge-stock { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; text-align: center; min-width: 25px; }
         .stock-rojo { background-color: #ffebee; color: #d22027; border: 1px solid #d22027; }
-        .stock-amarillo { background-color: #fff8e1; color: #f57f17; border: 1px solid #fbc02d; }
+        .stock-amarillo { background-color: #fff8e1; color: var(--naranja-texto); border: 1px solid #fbc02d; }
         .stock-verde { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #4caf50; }
         .config-box { background: var(--blanco); padding: 20px; border-radius: 12px; border: 1px solid var(--gris-claro); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .oculto { display: none !important; }
@@ -72,14 +74,15 @@
 
         .pos-results-header { display: grid; grid-template-columns: minmax(120px, 1fr) 70px 100px 90px; gap: 10px; padding: 10px 15px; background: var(--morado-pastel); color: var(--morado-oscuro); font-weight: bold; border-radius: 8px; margin-bottom: 8px; font-size: 0.9rem; align-items: center; }
         .sortable-header { cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; }
-        .sortable-header:hover { color: var(--morado-vibrante); }
+        .sortable-header:hover { text-decoration: underline; }
         .sort-icon { font-size: 0.75rem; }
 
         .result-grid-item { display: grid; grid-template-columns: minmax(120px, 1fr) 70px 100px 90px; gap: 10px; background: var(--blanco); border: 1px solid var(--gris-claro); padding: 10px 15px; border-radius: 8px; align-items: center; cursor: pointer; border-left: 4px solid var(--morado-vibrante); margin-bottom: 5px; transition: background 0.2s; touch-action: manipulation; }
         .result-grid-item:hover { background: var(--lila-fondo); }
+        .result-grid-item.resaltado { background: var(--lila-fondo); box-shadow: inset 0 0 0 2px var(--morado-vibrante); }
         .col-precio { font-weight: bold; color: var(--rojo-corazon); font-size: 1.05rem; text-align: right; }
         .col-stock { text-align: center; }
-        .col-depto { font-size: 0.85rem; color: gray; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .col-depto { font-size: 0.85rem; color: var(--texto-suave); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         /* PROMOCIONES */
         .promo-card { background: var(--blanco); border: 2px dashed var(--morado-pastel); border-radius: 8px; padding: 12px; position: relative; display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s; min-height: 90px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
@@ -104,8 +107,8 @@
         .cart-tab { background: var(--blanco); border: 1px solid var(--gris-claro); width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer; border-radius: 6px; color: var(--texto-oscuro); font-size: 1rem; transition: all 0.2s; touch-action: manipulation; }
         .cart-tab:hover { background: var(--lila-fondo); }
         .cart-tab.activo { background: var(--morado-vibrante); color: white; border-color: var(--morado-vibrante); }
-        .cart-tab.ocupado { background: var(--naranja-pendiente); color: white; border-color: var(--naranja-pendiente); }
-        .cart-tab.ocupado.activo { background: var(--rojo-corazon); border-color: var(--rojo-corazon); }
+        .cart-tab.ocupado { background: var(--naranja-pendiente); color: var(--texto-oscuro); border-color: var(--naranja-pendiente); }
+        .cart-tab.ocupado.activo { background: var(--rojo-corazon); color: white; border-color: var(--rojo-corazon); }
 
         /* FIDELIZACIÓN */
         .fid-layout { display: flex; height: 100%; }
@@ -152,7 +155,7 @@
         @media (min-width: 768px) { .resumen-grid { grid-template-columns: repeat(4, 1fr); } }
         .resumen-card { background: white; border-radius: 10px; padding: 16px; border-left: 4px solid var(--morado-vibrante); box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
         .resumen-card .valor { font-size: 1.6rem; font-weight: 800; color: var(--morado-oscuro); }
-        .resumen-card .etiqueta { font-size: 0.8rem; color: gray; }
+        .resumen-card .etiqueta { font-size: 0.8rem; color: var(--texto-suave); }
         .resumen-card.alerta { border-left-color: var(--rojo-corazon); }
         .resumen-card.alerta .valor { color: var(--rojo-corazon); }
         .dash-toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px; }
@@ -167,7 +170,7 @@
         .dash-paginacion button:disabled { opacity: 0.4; cursor: not-allowed; }
         .badge-stock-dash { padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.85rem; color: white; display: inline-block; min-width: 30px; text-align: center; cursor: pointer; }
         .badge-stock-dash.ok { background: var(--verde-exito); }
-        .badge-stock-dash.bajo { background: var(--naranja-pendiente); }
+        .badge-stock-dash.bajo { background: var(--naranja-pendiente); color: var(--texto-oscuro); }
         .badge-stock-dash.critico { background: var(--rojo-corazon); }
         .ajuste-stock-dash { display: flex; align-items: center; gap: 4px; }
         .ajuste-stock-dash button { width: 26px; height: 26px; border: none; border-radius: 5px; background: var(--morado-pastel); color: var(--morado-oscuro); font-weight: bold; cursor: pointer; }
@@ -177,7 +180,7 @@
         .top-ventas-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
         .top-ventas-header h3 { margin: 0; color: var(--morado-oscuro); }
         .periodo-toggle { display: flex; gap: 4px; background: var(--lila-fondo); padding: 4px; border-radius: 8px; }
-        .periodo-btn { background: none; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; color: gray; cursor: pointer; font-size: 0.85rem; touch-action: manipulation; }
+        .periodo-btn { background: none; border: none; padding: 6px 14px; border-radius: 6px; font-weight: 600; color: var(--texto-suave); cursor: pointer; font-size: 0.85rem; touch-action: manipulation; }
         .periodo-btn.active { background: var(--morado-vibrante); color: white; }
         .barra-fila { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
         .barra-nombre { width: 45%; max-width: 260px; flex-shrink: 0; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -215,7 +218,7 @@
         .ajuste-label { width: 170px; flex-shrink: 0; font-weight: 600; color: var(--texto-oscuro); font-size: 0.95rem; text-align: right; margin-right: 15px; }
         .ajuste-field { flex-grow: 1; }
         .ajuste-input { padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; width: 100%; box-sizing: border-box; outline: none; }
-        .ajuste-input:focus { border-color: var(--morado-vibrante); box-shadow: 0 0 5px rgba(139, 92, 246, 0.3); }
+        .ajuste-input:focus { border-color: var(--morado-vibrante); box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.2); }
         .ajuste-input.short { width: 130px; text-align: center; font-weight: bold; }
         .ajuste-readonly { background-color: var(--lila-fondo); color: var(--morado-oscuro); font-weight: bold; border: 1px dashed var(--morado-vibrante); cursor: not-allowed; }
         .ajuste-desc-text { font-weight: bold; font-size: 1.1rem; color: var(--morado-oscuro); padding: 10px 0; border-bottom: 1px solid var(--gris-claro); display: inline-block; width: 100%; }
@@ -235,7 +238,7 @@
         .badge-tipo { padding: 4px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; color: white; text-align: center; display: inline-block; min-width: 60px; }
         .bg-salida { background-color: var(--azul-salida); }
         .bg-entrada { background-color: var(--verde-exito); }
-        .bg-ajuste { background-color: var(--naranja-pendiente); }
+        .bg-ajuste { background-color: var(--naranja-pendiente); color: var(--texto-oscuro); }
         .btn-add-pedido { background: var(--morado-vibrante); color: white; border: none; width: 28px; height: 28px; border-radius: 4px; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold; touch-action: manipulation; }
         .faltante-item { background: var(--lila-fondo); padding: 8px; border-radius: 6px; margin-bottom: 5px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; gap: 8px; }
         .input-cant-pedido { width: 50px; padding: 4px; text-align: center; border: 1px solid var(--morado-pastel); border-radius: 4px; font-weight: bold; }
@@ -259,11 +262,11 @@
     <div id="login-overlay">
         <div class="login-box" id="conectando-box" style="text-align:center;">
             <h2>🌷 Farmacia La Violeta</h2>
-            <p style="color:gray;">Conectando...</p>
+            <p style="color:var(--texto-suave);">Conectando...</p>
         </div>
         <div class="login-box" id="config-faltante" style="display:none;">
             <h2>⚠️ Falta configurar</h2>
-            <p id="config-faltante-texto" style="color:gray;">Este sistema necesita conectarse a una base de datos compartida antes de usarse.
+            <p id="config-faltante-texto" style="color:var(--texto-suave);">Este sistema necesita conectarse a una base de datos compartida antes de usarse.
                 Abre <code>index.html</code> y sigue las instrucciones que están al inicio del bloque
                 <code>&lt;script&gt;</code> principal (buscar "CONFIGURACIÓN DE FIREBASE").</p>
         </div>
@@ -302,7 +305,7 @@
         <div class="modal-caja" style="max-width:350px; text-align:center;">
             <h3>Iniciar Turno</h3>
             <div id="login-pin-normal">
-                <p style="font-size:0.85rem; color:gray; margin-top:-5px; margin-bottom:15px;">Selecciona tu nombre e ingresa tu PIN.</p>
+                <p style="font-size:0.85rem; color:var(--texto-suave); margin-top:-5px; margin-bottom:15px;">Selecciona tu nombre e ingresa tu PIN.</p>
                 <select id="login-select-user" class="buscador-input" style="margin-bottom: 15px; font-weight:bold; font-size:1.1rem;"></select>
                 <input type="password" id="login-pin" class="buscador-input" placeholder="PIN" style="text-align:center; font-size:1.5rem; letter-spacing: 5px; margin-bottom: 15px;" maxlength="4" onkeydown="if(event.key==='Enter') procesarLogin()">
                 <div style="display:flex; gap:10px;">
@@ -311,7 +314,7 @@
                 </div>
             </div>
             <div id="login-pin-primerouso" class="oculto">
-                <p style="font-size:0.85rem; color:gray; margin-top:-5px; margin-bottom:15px;">Todavía no hay personal registrado. Crea el primer usuario para empezar a vender.</p>
+                <p style="font-size:0.85rem; color:var(--texto-suave); margin-top:-5px; margin-bottom:15px;">Todavía no hay personal registrado. Crea el primer usuario para empezar a vender.</p>
                 <input type="text" id="primer-user-nombre" class="buscador-input" placeholder="Tu nombre" style="margin-bottom:10px;">
                 <input type="password" id="primer-user-pin" class="buscador-input" placeholder="Crea un PIN (4 dígitos)" style="text-align:center; font-size:1.3rem; letter-spacing: 5px; margin-bottom: 15px;" maxlength="4" onkeydown="if(event.key==='Enter') crearPrimerUsuario()">
                 <button class="btn-concretar" style="width:100%;" onclick="crearPrimerUsuario()">Crear y entrar</button>
@@ -323,10 +326,10 @@
     <div id="modal-promo" class="modal-pantalla">
         <div class="modal-caja" style="display: flex; flex-direction: column; max-height: 80vh;">
             <h3>Añadir a Promociones</h3>
-            <p style="font-size:0.85rem; color:gray; text-align:center; margin-top:-10px;">Busca el producto que deseas fijar en la pantalla principal.</p>
+            <p style="font-size:0.85rem; color:var(--texto-suave); text-align:center; margin-top:-10px;">Busca el producto que deseas fijar en la pantalla principal.</p>
             <input type="text" id="buscador-promo" class="buscador-input" placeholder="🔍 Buscar producto..." oninput="buscarPromoPOS()">
             <div id="lista-resultados-promo" style="flex-grow: 1; overflow-y: auto; margin-top: 10px; border-top: 1px solid var(--gris-claro); padding-top: 10px;"></div>
-            <button class="btn-pendiente" style="background:#9e9e9e; margin-top: 15px;" onclick="cerrarModalPromo()">Cerrar</button>
+            <button class="btn-pendiente" style="background:var(--texto-suave); color:white; margin-top: 15px;" onclick="cerrarModalPromo()">Cerrar</button>
         </div>
     </div>
 
@@ -348,7 +351,7 @@
             </div>
             <div style="display:flex; gap:10px;">
                 <button class="btn-concretar" onclick="aplicarDescuento()">✅ Aplicar</button>
-                <button class="btn-pendiente" style="background:#9e9e9e;" onclick="cerrarModalDescuento()">❌ Quitar</button>
+                <button class="btn-pendiente" style="background:var(--texto-suave); color:white;" onclick="cerrarModalDescuento()">❌ Quitar</button>
             </div>
         </div>
     </div>
@@ -368,7 +371,7 @@
                 <div style="font-size:1.2rem; font-weight:bold; color:var(--morado-oscuro); text-align:center; margin-top: 10px;">Vuelto a entregar: <br><span id="vuelto-calculado" style="color:var(--verde-exito); font-size:2rem;">$0</span></div>
             </div>
             <div style="display:flex; gap:10px; margin-top: 20px;">
-                <button class="btn-pendiente" style="background:#9e9e9e;" onclick="cerrarModalPago()">Cancelar</button>
+                <button class="btn-pendiente" style="background:var(--texto-suave); color:white;" onclick="cerrarModalPago()">Cancelar</button>
                 <button id="btn-confirmar-pago" class="btn-concretar" onclick="procesarPagoConcretado()" disabled>✅ Confirmar Pago</button>
             </div>
         </div>
@@ -380,7 +383,7 @@
             <h3>Vincular Cliente</h3>
             <input type="text" id="buscador-cliente-pos" class="buscador-input" placeholder="🔍 Buscar por RUT o Nombre..." oninput="buscarClientePOS()">
             <div id="lista-clientes-pos" style="flex-grow: 1; overflow-y: auto; margin-top: 10px; border-top: 1px solid var(--gris-claro); padding-top: 10px;"></div>
-            <button class="btn-pendiente" style="background:#9e9e9e; margin-top: 15px;" onclick="cerrarModalClientePOS()">Volver</button>
+            <button class="btn-pendiente" style="background:var(--texto-suave); color:white; margin-top: 15px;" onclick="cerrarModalClientePOS()">Volver</button>
         </div>
     </div>
 
@@ -402,7 +405,7 @@
             <div class="container-interno">
                 <div class="pos-layout">
                     <div class="pos-search-col">
-                        <input type="text" id="pos-search" class="buscador-input" style="margin-bottom:10px;" placeholder="🔍 Buscar producto o escanear código..." autocomplete="off">
+                        <input type="text" id="pos-search" class="buscador-input" style="margin-bottom:10px;" placeholder="🔍 Buscar producto o escanear código..." autocomplete="off" role="combobox" aria-label="Buscar producto o escanear código" aria-autocomplete="list" aria-controls="pos-results" aria-expanded="false">
 
                         <div class="pos-results-header" id="pos-results-header" style="display:none;">
                             <div class="sortable-header" onclick="ordenarResultados('nombre')" title="Ordenar por Nombre">Nombre <span id="sort-icon-nombre" class="sort-icon"></span></div>
@@ -411,7 +414,7 @@
                             <div class="sortable-header" style="justify-content:flex-end;" onclick="ordenarResultados('precio')" title="Ordenar por Precio">Precio <span id="sort-icon-precio" class="sort-icon"></span></div>
                         </div>
 
-                        <div id="pos-results" style="display: none; flex-direction: column; gap: 8px; max-height: 55vh; overflow-y: auto;"></div>
+                        <div id="pos-results" role="listbox" aria-label="Resultados de búsqueda" style="display: none; flex-direction: column; gap: 8px; max-height: 55vh; overflow-y: auto;"></div>
 
                         <div id="panel-promociones">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px solid var(--morado-pastel); padding-bottom: 5px;">
@@ -424,7 +427,7 @@
 
                     <div class="pos-cart-col">
                         <div style="background: var(--lila-fondo); padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--morado-pastel);">
-                            <div style="font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><span style="margin-right: 5px;">👤</span> <strong id="pos-cliente-nombre" style="color: gray;">Venta Anónima</strong></div>
+                            <div style="font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><span style="margin-right: 5px;">👤</span> <strong id="pos-cliente-nombre" style="color: var(--texto-suave);">Venta Anónima</strong></div>
                             <div style="display: flex; gap: 5px;">
                                 <button onclick="abrirModalClientePOS();" style="background: var(--morado-vibrante); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">+ Cliente</button>
                                 <button id="btn-quitar-cliente" onclick="quitarClientePOS()" style="display: none; background: var(--rojo-corazon); color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">✖</button>
@@ -442,20 +445,20 @@
                                 </div>
                             </div>
 
-                            <div id="cart-list" class="cart-list"><div style="text-align:center; color:gray; padding:10px; font-size:0.9rem;">El carrito está vacío</div></div>
+                            <div id="cart-list" class="cart-list"><div style="text-align:center; color:var(--texto-suave); padding:10px; font-size:0.9rem;">El carrito está vacío</div></div>
 
                             <div class="cart-footer">
                                 <div class="cart-total-row" title="Doble clic para aplicar descuento" ondblclick="abrirModalDescuento()">
                                     <span>Total:</span>
                                     <div style="text-align: right; display: flex; flex-direction: column; align-items: flex-end;">
-                                        <span id="cart-subtotal" style="font-size: 0.9rem; color: gray; text-decoration: line-through; display: none; line-height: 1;">$0</span>
+                                        <span id="cart-subtotal" style="font-size: 0.9rem; color: var(--texto-suave); text-decoration: line-through; display: none; line-height: 1;">$0</span>
                                         <div style="display: flex; align-items: center; gap: 8px;">
                                             <span id="badge-desc" class="badge-stock stock-verde" style="display: none; margin:0;">-0%</span>
                                             <span id="cart-total">$0</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div style="text-align: right; margin-bottom: 12px; margin-top: -3px;"><small style="color:gray;">(Doble clic en el total para descuento)</small></div>
+                                <div style="text-align: right; margin-bottom: 12px; margin-top: -3px;"><small style="color:var(--texto-suave);">(Doble clic en el total para descuento)</small></div>
 
                                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                                     <button id="btn-guardar-pendiente" class="btn-pendiente" onclick="pausarVenta()" disabled title="Mover a otra caja vacía">⏳ Pausar Venta</button>
@@ -487,7 +490,7 @@
                             <button class="periodo-btn" onclick="cambiarPeriodoTop('anio', this)">Año</button>
                         </div>
                     </div>
-                    <div id="top-ventas-lista"><p style="color:gray; text-align:center;">Cargando...</p></div>
+                    <div id="top-ventas-lista"><p style="color:var(--texto-suave); text-align:center;">Cargando...</p></div>
                 </div>
 
                 <div class="dash-toolbar">
@@ -522,7 +525,7 @@
                     </div>
                     <div class="ajuste-row">
                         <label class="ajuste-label">Descripción</label>
-                        <div class="ajuste-field"><span id="ajust-desc" class="ajuste-desc-text" style="color: gray; font-weight: normal; font-size: 1rem;">Esperando producto...</span></div>
+                        <div class="ajuste-field"><span id="ajust-desc" class="ajuste-desc-text" style="color: var(--texto-suave); font-weight: normal; font-size: 1rem;">Esperando producto...</span></div>
                     </div>
                     <div class="ajuste-row">
                         <label class="ajuste-label">Cantidad Actual</label>
@@ -567,7 +570,7 @@
                 </div>
                 <div class="pedidos-side">
                     <h2 style="color: var(--morado-oscuro); margin-top: 0; margin-bottom: 5px; font-size: 1.2rem;">Lista Proveedor</h2>
-                    <p style="font-size: 0.8rem; color: gray; margin-top: 0;">Agrega productos usando el botón <strong style="color:var(--morado-vibrante);">+</strong> de la tabla.</p>
+                    <p style="font-size: 0.8rem; color: var(--texto-suave); margin-top: 0;">Agrega productos usando el botón <strong style="color:var(--morado-vibrante);">+</strong> de la tabla.</p>
                     <div id="lista-proveedor" style="flex-grow: 1; overflow-y: auto; margin-bottom: 15px; border-top: 1px solid var(--gris-claro); padding-top: 10px;"></div>
                     <button class="btn-concretar" style="padding: 10px;" onclick="copiarListaProveedor()">📤 Copiar Lista</button>
                 </div>
@@ -580,7 +583,7 @@
                 <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; border-bottom: 2px solid var(--gris-claro); padding-bottom: 10px; margin-bottom: 15px;">
                     <div>
                         <h3 style="margin:0; color: var(--morado-oscuro);">Ventas del turno actual</h3>
-                        <p style="margin: 3px 0 0 0; font-size: 0.8rem; color: gray;">Desde el último Corte de Caja — no es necesariamente "hoy".</p>
+                        <p style="margin: 3px 0 0 0; font-size: 0.8rem; color: var(--texto-suave);">Desde el último Corte de Caja — no es necesariamente "hoy".</p>
                     </div>
                     <strong style="color:var(--verde-exito); font-size:1.2rem;">Total: <span id="total-dia-historial">$0</span></strong>
                 </div>
@@ -605,7 +608,7 @@
                         <div style="display: flex; justify-content: space-between; font-size: 1.2rem;"><strong>Total Vendido:</strong> <strong id="corte-total-ventas" style="color: var(--morado-oscuro);">$0</strong></div>
                     </div>
                     <div class="config-box" style="flex: 1; min-width: 280px; border-top: 4px solid var(--naranja-pendiente);">
-                        <h3 style="margin-top:0; color: var(--naranja-pendiente);">Arqueo Físico</h3>
+                        <h3 style="margin-top:0; color: var(--naranja-texto);">Arqueo Físico</h3>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="font-weight: 600; font-size: 0.95rem;">Retiro de dinero ($):</label><input type="number" id="corte-retiro" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="font-weight: 600; font-size: 0.95rem;">Efectivo en caja ($):</label><input type="number" id="corte-efectivo" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="font-weight: 600; font-size: 0.95rem;">Tarjetas (Voucher) ($):</label><input type="number" id="corte-tarjeta" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
@@ -659,7 +662,7 @@
                             <table class="fid-table"><tbody id="tabla-historial-cliente"></tbody></table>
                         </div>
                     </div>
-                    <div id="vista-inicio-clientes" style="text-align:center; color:gray; margin-top:50px;">
+                    <div id="vista-inicio-clientes" style="text-align:center; color:var(--texto-suave); margin-top:50px;">
                         <h2>Selecciona o registra un cliente</h2>
                     </div>
                 </div>
@@ -671,7 +674,7 @@
             <div class="container-interno">
                 <div style="background:white; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid var(--gris-claro);">
                     <h3 style="color:var(--morado-oscuro); margin-top:0;">Cargar Vademécum</h3>
-                    <p style="font-size:0.9rem; color:gray;">Sube un Excel con columnas "Principio Activo", "Categoría / Filtro", "Grupo Farmacológico", "Mecanismo de Acción", "Indicaciones", "Posología", "Precauciones / Advertencias" y "Nombres Comerciales".</p>
+                    <p style="font-size:0.9rem; color:var(--texto-suave);">Sube un Excel con columnas "Principio Activo", "Categoría / Filtro", "Grupo Farmacológico", "Mecanismo de Acción", "Indicaciones", "Posología", "Precauciones / Advertencias" y "Nombres Comerciales".</p>
                     <label class="file-label" for="file-vademecum-excel">📄 Seleccionar archivo Excel</label>
                     <input type="file" id="file-vademecum-excel" accept=".xlsx,.xls,.csv" style="display:none;" onchange="procesarExcelVademecum(event)">
                     <span id="estado-excel-vademecum" style="margin-left:10px; color:var(--morado-oscuro); font-weight:bold;"></span>
@@ -679,7 +682,7 @@
                 <input type="text" id="buscador-vademecum" class="buscador-input" placeholder="🔍 Buscar por principio activo, nombre comercial o indicación..." style="margin-bottom:15px;">
                 <div class="filtros" id="contenedor-filtros"></div>
                 <div id="resultados-vademecum">
-                    <div style="text-align:center; padding:15px; color:gray;">Aún no se ha cargado el Vademécum.</div>
+                    <div style="text-align:center; padding:15px; color:var(--texto-suave);">Aún no se ha cargado el Vademécum.</div>
                 </div>
             </div>
         </div>
@@ -711,8 +714,8 @@
             <div class="container-interno">
                 <div class="config-box" style="margin-top: 20px;">
                     <h2 style="color:var(--morado-oscuro); margin-top:0;">🛠️ Configuración del Sistema</h2>
-                    <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; color: gray; font-size:1.1rem;">Gestión de Personal (turnos)</h3>
-                    <p style="font-size:0.85rem; color:gray; margin-top:-5px;">Cada persona del personal usa su nombre + un PIN de 4 dígitos para identificarse en las ventas y ajustes de stock. Esto es distinto del correo/contraseña de la cuenta compartida de Firebase.</p>
+                    <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; color: var(--texto-suave); font-size:1.1rem;">Gestión de Personal (turnos)</h3>
+                    <p style="font-size:0.85rem; color:var(--texto-suave); margin-top:-5px;">Cada persona del personal usa su nombre + un PIN de 4 dígitos para identificarse en las ventas y ajustes de stock. Esto es distinto del correo/contraseña de la cuenta compartida de Firebase.</p>
                     <div style="display: flex; gap: 30px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 250px;">
                             <label style="font-weight:bold; display:block; margin-bottom:5px;">Nombre del Cajero:</label>
@@ -729,21 +732,21 @@
                         </div>
                     </div>
 
-                    <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; color: gray; font-size:1.1rem; margin-top:35px;">Respaldo de seguridad</h3>
-                    <p style="font-size:0.85rem; color:gray; margin-top:-5px;">El inventario y las ventas viven en la base de datos compartida (no solo en este dispositivo). Aun así, descarga un respaldo de vez en cuando por si necesitas recuperar el catálogo ante un error.</p>
+                    <h3 style="border-bottom: 1px solid #ccc; padding-bottom: 5px; color: var(--texto-suave); font-size:1.1rem; margin-top:35px;">Respaldo de seguridad</h3>
+                    <p style="font-size:0.85rem; color:var(--texto-suave); margin-top:-5px;">El inventario y las ventas viven en la base de datos compartida (no solo en este dispositivo). Aun así, descarga un respaldo de vez en cuando por si necesitas recuperar el catálogo ante un error.</p>
                     <div class="respaldo-box">
                         <h3>📊 Descargar catálogo en Excel</h3>
-                        <p style="color:gray; margin-top:0;">Genera un archivo <code>.csv</code> con código, nombre, precio, stock y departamento actuales.</p>
+                        <p style="color:var(--texto-suave); margin-top:0;">Genera un archivo <code>.csv</code> con código, nombre, precio, stock y departamento actuales.</p>
                         <button class="btn-secundario" onclick="exportarCsv()">Descargar catálogo (.csv)</button>
                     </div>
                     <div class="respaldo-box">
                         <h3>⬇️ Descargar respaldo</h3>
-                        <p style="color:gray; margin-top:0;">Genera un archivo <code>.json</code> con el inventario completo y el historial de ventas.</p>
+                        <p style="color:var(--texto-suave); margin-top:0;">Genera un archivo <code>.json</code> con el inventario completo y el historial de ventas.</p>
                         <button class="btn-secundario" onclick="exportarRespaldo()">Descargar respaldo ahora</button>
                     </div>
                     <div class="respaldo-box">
                         <h3>⬆️ Restaurar catálogo</h3>
-                        <p style="color:gray; margin-top:0;">Actualiza el inventario con los productos de un respaldo .json (no borra nada, solo actualiza/agrega).</p>
+                        <p style="color:var(--texto-suave); margin-top:0;">Actualiza el inventario con los productos de un respaldo .json (no borra nada, solo actualiza/agrega).</p>
                         <label class="file-label" for="input-respaldo">📂 Elegir archivo de respaldo (.json)</label>
                         <input type="file" id="input-respaldo" accept="application/json" style="display:none" onchange="importarRespaldo(event)">
                     </div>
@@ -905,7 +908,7 @@
                 const contadorInv = document.getElementById('inv-count');
                 if (contadorInv) contadorInv.innerText = inventarioMemoria.length.toLocaleString('es-CL');
                 renderizarDashboardSiVisible();
-                manejarBusquedaPos();
+                manejarBusquedaPos(true);
                 renderizarPromociones();
             }, err => mostrarToast('Error leyendo inventario: ' + err.message, 'error'));
 
@@ -1210,7 +1213,7 @@
             const container = document.getElementById('lista-promociones');
             if (!container) return;
             if (promocionesCodigos.length === 0) {
-                container.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:20px; color:gray; font-size:0.9rem;">No hay productos en promoción. Usa el botón + para fijar productos aquí.</div>';
+                container.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; padding:20px; color:var(--texto-suave); font-size:0.9rem;">No hay productos en promoción. Usa el botón + para fijar productos aquí.</div>';
                 return;
             }
             container.innerHTML = '';
@@ -1243,55 +1246,103 @@
         let sortCol = 'nombre';
         let sortAsc = true;
         let timeoutBusquedaPos = null;
+        let busquedaPendiente = false;
+        let resultadoActivo = 0;
+        let seleccionExplicita = false;
 
         const buscadorPos = document.getElementById('pos-search');
         buscadorPos.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                if (!currentSearchResults.length) return;
                 e.preventDefault();
-                clearTimeout(timeoutBusquedaPos);
-                const c = e.target.value.trim().toLowerCase();
-                if (!c) return;
-                if (inventarioDict[c]) {
-                    agregarAlCarrito(inventarioDict[c]);
-                    e.target.value = '';
-                    document.getElementById('pos-results-header').style.display = 'none';
-                    document.getElementById('pos-results').style.display = 'none';
-                    document.getElementById('panel-promociones').style.display = 'block';
-                    currentSearchResults = [];
-                }
+                const ultimo = currentSearchResults.length - 1;
+                resultadoActivo = e.key === 'ArrowDown' ? Math.min(resultadoActivo + 1, ultimo) : Math.max(resultadoActivo - 1, 0);
+                seleccionExplicita = true;
+                resaltarResultadoPos(true);
+                return;
             }
-        });
-        buscadorPos.addEventListener('input', manejarBusquedaPos);
-
-        function manejarBusquedaPos() {
+            if (e.key !== 'Enter') return;
+            e.preventDefault();
+            const habiaBusquedaPendiente = busquedaPendiente;
             clearTimeout(timeoutBusquedaPos);
-            const b = normalizar(document.getElementById('pos-search').value);
+            busquedaPendiente = false;
+            const c = e.target.value.trim().toLowerCase();
+            if (!c) return;
+            if (inventarioDict[c]) { agregarAlCarrito(inventarioDict[c]); finalizarBusquedaPos(); return; }
+            if (habiaBusquedaPendiente) ejecutarBusquedaPos(false);
+            if (!currentSearchResults.length) return;
+            // Un código numérico que no existe no debe agregar por parecido un producto distinto.
+            if (!seleccionExplicita && /^\d+$/.test(c)) { mostrarToast('Código no encontrado en el inventario.', 'error'); return; }
+            agregarAlCarrito(currentSearchResults[resultadoActivo]);
+            finalizarBusquedaPos();
+        });
+        buscadorPos.addEventListener('input', () => manejarBusquedaPos());
+
+        function estadoComboPos(abierto) {
+            buscadorPos.setAttribute('aria-expanded', abierto ? 'true' : 'false');
+            if (!abierto) buscadorPos.removeAttribute('aria-activedescendant');
+        }
+
+        function limpiarResultadosPos() {
+            document.getElementById('pos-results-header').style.display = 'none';
+            const cr = document.getElementById('pos-results');
+            cr.style.display = 'none'; cr.innerHTML = '';
+            document.getElementById('panel-promociones').style.display = 'block';
+            currentSearchResults = []; resultadoActivo = 0; seleccionExplicita = false;
+            estadoComboPos(false);
+        }
+
+        function finalizarBusquedaPos() {
+            buscadorPos.value = '';
+            limpiarResultadosPos();
+            if (!esTactil) buscadorPos.focus();
+        }
+
+        function manejarBusquedaPos(conservarSeleccion) {
+            clearTimeout(timeoutBusquedaPos);
+            if (!normalizar(buscadorPos.value).trim()) {
+                busquedaPendiente = false;
+                limpiarResultadosPos();
+                return;
+            }
+            busquedaPendiente = true;
+            timeoutBusquedaPos = setTimeout(() => ejecutarBusquedaPos(conservarSeleccion === true), 150);
+        }
+
+        function ejecutarBusquedaPos(conservarSeleccion) {
+            busquedaPendiente = false;
+            const b = normalizar(buscadorPos.value);
+            if (!b.trim()) { limpiarResultadosPos(); return; }
+            const codigoActivo = conservarSeleccion && currentSearchResults[resultadoActivo] ? currentSearchResults[resultadoActivo].codigo : null;
             const cr = document.getElementById('pos-results');
             const header = document.getElementById('pos-results-header');
             const promos = document.getElementById('panel-promociones');
 
-            if (!b.trim()) {
-                header.style.display = 'none'; cr.style.display = 'none'; promos.style.display = 'block';
-                cr.innerHTML = ''; currentSearchResults = [];
+            const res = inventarioMemoria.filter(p => normalizar(p.producto).includes(b) || normalizar(p.codigo).includes(b)).slice(0, 50);
+            if (res.length === 0) {
+                header.style.display = 'none'; promos.style.display = 'none'; cr.style.display = 'flex';
+                cr.innerHTML = '<div style="padding:15px; text-align:center; color:var(--texto-suave);">No se encontraron resultados.</div>';
+                currentSearchResults = []; resultadoActivo = 0; seleccionExplicita = false;
+                estadoComboPos(false);
                 return;
             }
-
-            timeoutBusquedaPos = setTimeout(() => {
-                const res = inventarioMemoria.filter(p => normalizar(p.producto).includes(b) || normalizar(p.codigo).includes(b)).slice(0, 50);
-                if (res.length === 0) {
-                    header.style.display = 'none'; promos.style.display = 'none'; cr.style.display = 'flex';
-                    cr.innerHTML = '<div style="padding:15px; text-align:center; color:gray;">No se encontraron resultados.</div>';
-                    currentSearchResults = [];
-                    return;
-                }
-                currentSearchResults = res;
-                promos.style.display = 'none'; header.style.display = 'grid'; cr.style.display = 'flex';
-                ordenarResultados(sortCol);
-            }, 150);
+            currentSearchResults = res;
+            promos.style.display = 'none'; header.style.display = 'grid'; cr.style.display = 'flex';
+            aplicarOrdenResultados();
+            const idx = codigoActivo ? currentSearchResults.findIndex(p => p.codigo === codigoActivo) : -1;
+            if (idx >= 0) resultadoActivo = idx; else { resultadoActivo = 0; seleccionExplicita = false; }
+            renderizarResultadosBusquedaPos();
         }
 
         function ordenarResultados(columna) {
             if (sortCol === columna) sortAsc = !sortAsc; else { sortCol = columna; sortAsc = true; }
+            aplicarOrdenResultados();
+            resultadoActivo = 0; seleccionExplicita = false;
+            renderizarResultadosBusquedaPos();
+        }
+
+        function aplicarOrdenResultados() {
+            const columna = sortCol;
             document.querySelectorAll('.sort-icon').forEach(el => el.textContent = '');
             const iconoEl = document.getElementById('sort-icon-' + columna);
             if (iconoEl) iconoEl.textContent = sortAsc ? ' 🔼' : ' 🔽';
@@ -1306,38 +1357,45 @@
                 if (valA > valB) return sortAsc ? 1 : -1;
                 return 0;
             });
-            renderizarResultadosBusquedaPos();
+        }
+
+        function resaltarResultadoPos(desplazar) {
+            document.querySelectorAll('#pos-results .result-grid-item').forEach((fila, i) => {
+                const activo = i === resultadoActivo;
+                fila.classList.toggle('resaltado', activo);
+                fila.setAttribute('aria-selected', activo ? 'true' : 'false');
+                if (activo) {
+                    buscadorPos.setAttribute('aria-activedescendant', fila.id);
+                    if (desplazar) fila.scrollIntoView({ block: 'nearest' });
+                }
+            });
         }
 
         function renderizarResultadosBusquedaPos() {
             const cr = document.getElementById('pos-results');
             cr.innerHTML = '';
-            currentSearchResults.forEach(p => {
+            currentSearchResults.forEach((p, i) => {
                 const d = document.createElement('div');
                 d.className = 'result-grid-item';
+                d.id = 'pos-res-' + i;
+                d.setAttribute('role', 'option');
                 const stockNum = p.stock || 0;
                 const claseStock = stockNum <= UMBRAL_CRITICO ? 'stock-rojo' : (stockNum <= UMBRAL_BAJO ? 'stock-amarillo' : 'stock-verde');
                 const depto = p.departamento && p.departamento !== '-' ? p.departamento : '';
                 d.innerHTML = `
                     <div style="min-width:0;">
                         <strong style="display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--texto-oscuro);" title="${escapeHtml(p.producto)}">${escapeHtml(p.producto)}</strong>
-                        <small style="color:gray;">Cod: ${escapeHtml(p.codigo)}</small>
+                        <small style="color:var(--texto-suave);">Cod: ${escapeHtml(p.codigo)}</small>
                     </div>
                     <div class="col-stock"><span class="badge-stock ${claseStock}">${stockNum}</span></div>
                     <div class="col-depto" title="${escapeHtml(depto)}">${escapeHtml(depto)}</div>
                     <div class="col-precio">$${(p.precio || 0).toLocaleString('es-CL')}</div>
                 `;
-                d.onclick = () => {
-                    agregarAlCarrito(p);
-                    document.getElementById('pos-search').value = '';
-                    document.getElementById('pos-results-header').style.display = 'none';
-                    document.getElementById('pos-results').style.display = 'none';
-                    document.getElementById('panel-promociones').style.display = 'block';
-                    cr.innerHTML = ''; currentSearchResults = [];
-                    if (!esTactil) document.getElementById('pos-search').focus();
-                };
+                d.onclick = () => { agregarAlCarrito(p); finalizarBusquedaPos(); };
                 cr.appendChild(d);
             });
+            estadoComboPos(currentSearchResults.length > 0);
+            resaltarResultadoPos(false);
         }
 
         // ----------------------------------------------------
@@ -1427,7 +1485,7 @@
             actualizarEstiloTabs();
 
             if (carritoActual.length === 0) {
-                c.innerHTML = '<div style="padding:10px;text-align:center;color:gray;">El carrito está vacío</div>';
+                c.innerHTML = '<div style="padding:10px;text-align:center;color:var(--texto-suave);">El carrito está vacío</div>';
                 t.textContent = '$0'; totalPagoActual = 0;
                 document.getElementById('cart-subtotal').style.display = 'none';
                 document.getElementById('badge-desc').style.display = 'none';
@@ -1477,7 +1535,7 @@
                 document.getElementById('pos-cliente-nombre').innerHTML = `<strong style="color:var(--morado-oscuro);">${escapeHtml(cli.nombre)} ${escapeHtml(cli.apellido || '')}</strong>`;
                 document.getElementById('btn-quitar-cliente').style.display = 'inline-block';
             } else {
-                document.getElementById('pos-cliente-nombre').innerHTML = '<strong style="color:gray;">Venta Anónima</strong>';
+                document.getElementById('pos-cliente-nombre').innerHTML = '<strong style="color:var(--texto-suave);">Venta Anónima</strong>';
                 document.getElementById('btn-quitar-cliente').style.display = 'none';
             }
         }
@@ -1488,7 +1546,7 @@
             const l = document.getElementById('lista-clientes-pos');
             const filtrados = clientesMemoria.filter(c => clienteCoincide(c, t));
             if (filtrados.length === 0) {
-                l.innerHTML = '<p style="text-align:center; color:gray; padding:10px;">' + (t ? 'Sin clientes que coincidan.' : 'Sin clientes registrados todavía.') + '</p>';
+                l.innerHTML = '<p style="text-align:center; color:var(--texto-suave); padding:10px;">' + (t ? 'Sin clientes que coincidan.' : 'Sin clientes registrados todavía.') + '</p>';
                 return;
             }
             l.innerHTML = filtrados.map(c => `
@@ -1627,7 +1685,7 @@
         async function cargarTopVentas() {
             const cont = document.getElementById('top-ventas-lista');
             if (!cont || FIREBASE_SIN_CONFIGURAR) return;
-            cont.innerHTML = '<p style="color:gray; text-align:center;">Cargando...</p>';
+            cont.innerHTML = '<p style="color:var(--texto-suave); text-align:center;">Cargando...</p>';
             let totales = {};
             try {
                 if (periodoTopActual === 'semana') {
@@ -1650,7 +1708,7 @@
                 return { cantidad: totales[codigo], nombre: prod ? prod.producto : codigo };
             }).sort((a, b) => b.cantidad - a.cantidad).slice(0, 8);
 
-            if (filas.length === 0) { cont.innerHTML = '<p style="color:gray; text-align:center; padding:10px;">Todavía no hay ventas registradas en este período.</p>'; return; }
+            if (filas.length === 0) { cont.innerHTML = '<p style="color:var(--texto-suave); text-align:center; padding:10px;">Todavía no hay ventas registradas en este período.</p>'; return; }
             const max = filas[0].cantidad;
             cont.innerHTML = filas.map(f => `
                 <div class="barra-fila">
@@ -1698,7 +1756,7 @@
 
             if (inventarioMemoria.length === 0) {
                 filasActuales = [];
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:gray; padding:30px;">No hay productos cargados todavía. Cárgalos desde "🛠️ Configuración" apenas esté lista la pestaña de inventario.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--texto-suave); padding:30px;">No hay productos cargados todavía. Cárgalos desde "🛠️ Configuración" apenas esté lista la pestaña de inventario.</td></tr>`;
                 if (paginacion) paginacion.innerHTML = '';
                 return;
             }
@@ -1715,7 +1773,7 @@
             filasActuales = filas;
 
             if (filas.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:gray; padding:20px;">No se encontraron productos.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--texto-suave); padding:20px;">No se encontraron productos.</td></tr>`;
                 if (paginacion) paginacion.innerHTML = '';
                 return;
             }
@@ -1742,7 +1800,7 @@
                     : `<span class="badge-stock-dash ${claseBadge}">${stock}</span>`;
                 return `
                 <tr>
-                    <td><strong>${escapeHtml(p.producto)}</strong><br><small style="color:gray;">Cód: ${escapeHtml(p.codigo)}</small></td>
+                    <td><strong>${escapeHtml(p.producto)}</strong><br><small style="color:var(--texto-suave);">Cód: ${escapeHtml(p.codigo)}</small></td>
                     <td>$${(p.precio || 0).toLocaleString('es-CL')}</td>
                     <td>${celdaStock}</td>
                     <td>${vendidosSemana.toLocaleString('es-CL')}</td>
@@ -1859,7 +1917,7 @@
 
             document.getElementById('ajust-codigo').value = '';
             document.getElementById('ajust-desc').textContent = 'Esperando producto...';
-            document.getElementById('ajust-desc').style.color = 'gray'; document.getElementById('ajust-desc').style.fontWeight = 'normal';
+            document.getElementById('ajust-desc').style.color = 'var(--texto-suave)'; document.getElementById('ajust-desc').style.fontWeight = 'normal';
             document.getElementById('ajust-actual').value = '0';
             document.getElementById('ajust-delta').value = ''; document.getElementById('ajust-nueva').value = ''; document.getElementById('ajust-motivo').value = '';
             document.getElementById('ajust-delta').disabled = true; document.getElementById('ajust-nueva').disabled = true; document.getElementById('ajust-motivo').disabled = true;
@@ -1878,7 +1936,7 @@
             const filtrados = filtroF ? movimientosMemoria.filter(m => m.fechaIso === filtroF) : movimientosMemoria;
 
             if (filtrados.length === 0) {
-                contenedor.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:gray;">No hay movimientos para esta fecha.</td></tr>';
+                contenedor.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--texto-suave);">No hay movimientos para esta fecha.</td></tr>';
                 return;
             }
             contenedor.innerHTML = '';
@@ -1891,13 +1949,13 @@
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td style="color:gray; font-size:0.8rem; white-space:nowrap;">${escapeHtml(horaTexto)}</td>
-                    <td class="td-producto"><span class="td-truncado" title="${escapeHtml(mov.producto)}">${escapeHtml(nombreTruncado)}</span><small style="color:gray;">Cod: ${escapeHtml(mov.codigo)}</small></td>
+                    <td style="color:var(--texto-suave); font-size:0.8rem; white-space:nowrap;">${escapeHtml(horaTexto)}</td>
+                    <td class="td-producto"><span class="td-truncado" title="${escapeHtml(mov.producto)}">${escapeHtml(nombreTruncado)}</span><small style="color:var(--texto-suave);">Cod: ${escapeHtml(mov.codigo)}</small></td>
                     <td style="text-align:center; font-weight:bold; color:#555;">${mov.stockAnterior}</td>
                     <td style="text-align:center;"><span class="badge-tipo ${claseTipo}">${textoTipo}</span></td>
                     <td style="text-align:center; font-weight:bold;">${mov.cantidad}</td>
                     <td style="text-align:center; font-weight:bold; color:var(--morado-oscuro);">${mov.stockNuevo}</td>
-                    <td style="text-align:center; color:gray; font-size:0.75rem;">${escapeHtml(mov.cajero || '-')}</td>
+                    <td style="text-align:center; color:var(--texto-suave); font-size:0.75rem;">${escapeHtml(mov.cajero || '-')}</td>
                     <td style="text-align:center;"></td>
                 `;
                 const btnPedir = document.createElement('button');
@@ -1929,14 +1987,14 @@
         function renderizarFaltantes() {
             const c = document.getElementById('lista-proveedor');
             if (!c) return;
-            if (faltantesMemoria.length === 0) { c.innerHTML = '<div style="text-align:center; color:gray;">Lista vacía.</div>'; return; }
+            if (faltantesMemoria.length === 0) { c.innerHTML = '<div style="text-align:center; color:var(--texto-suave);">Lista vacía.</div>'; return; }
             c.innerHTML = '';
             faltantesMemoria.forEach(i => {
                 const div = document.createElement('div');
                 div.className = 'faltante-item';
                 const infoDiv = document.createElement('div');
                 infoDiv.style.cssText = 'flex-grow:1; min-width:0;';
-                infoDiv.innerHTML = `<strong style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;" title="${escapeHtml(i.nombre)}">${escapeHtml(i.nombre)}</strong><small style="color:gray;">${escapeHtml(i.codigo)}</small>`;
+                infoDiv.innerHTML = `<strong style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;" title="${escapeHtml(i.nombre)}">${escapeHtml(i.nombre)}</strong><small style="color:var(--texto-suave);">${escapeHtml(i.codigo)}</small>`;
                 const controlesDiv = document.createElement('div');
                 controlesDiv.style.cssText = 'display:flex; align-items:center; gap:6px;';
                 const inputCant = document.createElement('input');
@@ -1967,7 +2025,7 @@
             const ventasTurno = ventasDelMes.filter(v => !v.cortada)
                 .sort((a, b) => (b.fecha && b.fecha.toDate ? b.fecha.toDate() : 0) - (a.fecha && a.fecha.toDate ? a.fecha.toDate() : 0));
             if (ventasTurno.length === 0) {
-                c.innerHTML = '<p style="text-align:center; color:gray; margin-top:30px;">Todavía no hay ventas en este turno.</p>';
+                c.innerHTML = '<p style="text-align:center; color:var(--texto-suave); margin-top:30px;">Todavía no hay ventas en este turno.</p>';
                 document.getElementById('total-dia-historial').textContent = '$0';
                 return;
             }
@@ -1979,7 +2037,7 @@
                 const metodoTexto = v.metodoPago === 'tarjeta' ? '💳 Tarjeta' : '💵 Efectivo';
                 return `<div style="background:var(--blanco); border-left:5px solid var(--verde-exito); padding:12px 15px; margin-bottom:10px; border-radius:8px;">
                     <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap;">
-                        <span style="font-size:0.8rem; color:gray;">🕒 ${horaTexto} · ${metodoTexto}${v.cajero ? ' · 👤 ' + escapeHtml(v.cajero) : ''}${v.clienteNombre ? ' · ' + escapeHtml(v.clienteNombre) : ''}</span>
+                        <span style="font-size:0.8rem; color:var(--texto-suave);">🕒 ${horaTexto} · ${metodoTexto}${v.cajero ? ' · 👤 ' + escapeHtml(v.cajero) : ''}${v.clienteNombre ? ' · ' + escapeHtml(v.clienteNombre) : ''}</span>
                         <strong style="color:var(--verde-exito);">$${(v.total || 0).toLocaleString('es-CL')}</strong>
                     </div>
                     <div style="margin-top:6px; font-size:0.9rem;">${detalle}</div>
@@ -2013,8 +2071,8 @@
             const diferencia = subtotal - totalVentasCorteNum;
             const difEl = document.getElementById('corte-diferencia'), boxDif = document.getElementById('corte-diferencia-box');
             if (diferencia < 0) { difEl.style.color = '#d22027'; boxDif.style.borderColor = '#d22027'; difEl.textContent = '- $' + Math.abs(diferencia).toLocaleString('es-CL') + ' (Falta)'; }
-            else if (diferencia === 0) { difEl.style.color = '#10b981'; boxDif.style.borderColor = '#10b981'; difEl.textContent = '$0 (Cuadra exacto)'; }
-            else { difEl.style.color = '#f59e0b'; boxDif.style.borderColor = '#f59e0b'; difEl.textContent = '+ $' + Math.abs(diferencia).toLocaleString('es-CL') + ' (Sobra)'; }
+            else if (diferencia === 0) { difEl.style.color = 'var(--verde-exito)'; boxDif.style.borderColor = 'var(--verde-exito)'; difEl.textContent = '$0 (Cuadra exacto)'; }
+            else { difEl.style.color = 'var(--naranja-texto)'; boxDif.style.borderColor = 'var(--naranja-pendiente)'; difEl.textContent = '+ $' + Math.abs(diferencia).toLocaleString('es-CL') + ' (Sobra)'; }
         }
         ['corte-retiro', 'corte-efectivo', 'corte-tarjeta', 'corte-otros'].forEach(id => document.getElementById(id).addEventListener('input', calcularCorte));
 
@@ -2064,14 +2122,14 @@
         function renderizarHistorialCortes() {
             const c = document.getElementById('lista-historial-cortes');
             if (!c) return;
-            if (cortesMemoria.length === 0) { c.innerHTML = '<div style="text-align:center; padding:20px; color:gray;">No hay cortes registrados.</div>'; return; }
+            if (cortesMemoria.length === 0) { c.innerHTML = '<div style="text-align:center; padding:20px; color:var(--texto-suave);">No hay cortes registrados.</div>'; return; }
             c.innerHTML = cortesMemoria.map(corte => {
-                const colorDif = corte.diferencia < 0 ? '#d22027' : (corte.diferencia > 0 ? '#f59e0b' : '#10b981');
+                const colorDif = corte.diferencia < 0 ? '#d22027' : (corte.diferencia > 0 ? 'var(--naranja-texto)' : 'var(--verde-exito)');
                 const fechaTexto = corte.fecha && corte.fecha.toDate ? corte.fecha.toDate().toLocaleString('es-CL') : 'Sincronizando...';
                 return `<div style="border: 1px solid var(--gris-claro); padding: 12px; margin-bottom: 12px; border-radius: 8px; border-left: 5px solid ${colorDif};">
                     <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:5px;">
                         <strong style="font-size:1.05rem; color:var(--morado-oscuro);">${escapeHtml(fechaTexto)}</strong>
-                        <span style="color:gray;">Cajero: <strong style="color:var(--texto-oscuro);">${escapeHtml(corte.cajero || '-')}</strong></span>
+                        <span style="color:var(--texto-suave);">Cajero: <strong style="color:var(--texto-oscuro);">${escapeHtml(corte.cajero || '-')}</strong></span>
                     </div>
                     <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:0.95rem;">
                         <span>Ventas Turno: <strong>$${(corte.totalVentas || 0).toLocaleString('es-CL')}</strong></span>
@@ -2339,8 +2397,8 @@
             const cont = document.getElementById('resultados-vademecum');
             if (!cont) return;
             cont.innerHTML = '';
-            if (vademecumMemoria.length === 0) { cont.innerHTML = '<div style="text-align:center; padding:15px; color:gray;">Aún no se ha cargado el Vademécum.</div>'; return; }
-            if (datos.length === 0) { cont.innerHTML = '<div style="text-align:center; padding:15px; color:gray;">No se encontraron fármacos.</div>'; return; }
+            if (vademecumMemoria.length === 0) { cont.innerHTML = '<div style="text-align:center; padding:15px; color:var(--texto-suave);">Aún no se ha cargado el Vademécum.</div>'; return; }
+            if (datos.length === 0) { cont.innerHTML = '<div style="text-align:center; padding:15px; color:var(--texto-suave);">No se encontraron fármacos.</div>'; return; }
 
             datos.forEach(f => {
                 const div = document.createElement('div');
@@ -2386,7 +2444,7 @@
             const termino = document.getElementById('buscar-cliente').value.trim();
             const filtrados = clientesMemoria.filter(c => clienteCoincide(c, termino));
             if (filtrados.length === 0) {
-                cont.innerHTML = '<p style="text-align:center; color:gray; padding:15px;">' + (termino ? 'Sin clientes que coincidan.' : 'Sin clientes registrados todavía.') + '</p>';
+                cont.innerHTML = '<p style="text-align:center; color:var(--texto-suave); padding:15px;">' + (termino ? 'Sin clientes que coincidan.' : 'Sin clientes registrados todavía.') + '</p>';
                 return;
             }
             cont.innerHTML = filtrados.map(c => `
@@ -2457,12 +2515,12 @@
             document.getElementById('vista-inicio-clientes').classList.add('oculto');
             document.getElementById('vista-formulario-cliente').classList.add('oculto');
             document.getElementById('vista-perfil-cliente').classList.remove('oculto');
-            document.getElementById('perfil-nombre').innerHTML = `${escapeHtml(cliente.nombre)} ${escapeHtml(cliente.apellido || '')} <span style="color:var(--naranja-pendiente); font-size:0.9rem;">⭐ ${cliente.puntos || 0} pts</span>`;
+            document.getElementById('perfil-nombre').innerHTML = `${escapeHtml(cliente.nombre)} ${escapeHtml(cliente.apellido || '')} <span style="color:var(--naranja-texto); font-size:0.9rem;">⭐ ${cliente.puntos || 0} pts</span>`;
             document.getElementById('perfil-rut').textContent = cliente.rut;
             document.getElementById('perfil-notas').textContent = cliente.notas ? cliente.notas : 'Sin notas adicionales.';
 
             const tbody = document.getElementById('tabla-historial-cliente');
-            tbody.innerHTML = '<tr><td style="color:gray;">Cargando historial...</td></tr>';
+            tbody.innerHTML = '<tr><td style="color:var(--texto-suave);">Cargando historial...</td></tr>';
             try {
                 const snap = await db.collection('ventas').where('clienteRut', '==', rutId).orderBy('fecha', 'desc').limit(50).get();
                 renderizarHistorialCompras(snap.docs.map(d => d.data()));
@@ -2473,7 +2531,7 @@
 
         function renderizarHistorialCompras(ventasCliente) {
             const tbody = document.getElementById('tabla-historial-cliente');
-            if (ventasCliente.length === 0) { tbody.innerHTML = '<tr><td style="color:gray;">Sin compras registradas todavía.</td></tr>'; return; }
+            if (ventasCliente.length === 0) { tbody.innerHTML = '<tr><td style="color:var(--texto-suave);">Sin compras registradas todavía.</td></tr>'; return; }
             tbody.innerHTML = ventasCliente.map(v => {
                 const fecha = v.fecha && v.fecha.toDate ? v.fecha.toDate().toLocaleString('es-CL') : 'Sincronizando...';
                 const detalle = (v.items || []).map(i => `${i.cantidad}x ${i.producto}`).join(', ');
