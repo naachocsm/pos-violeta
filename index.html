@@ -2,14 +2,14 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon.png">
     <title>Sistema Integral | Farmacia La Violeta</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --morado-oscuro: #4a148c;
@@ -275,20 +275,20 @@
     <header>
         <div class="header-left">
             <label for="banner-upload" style="cursor:pointer;" title="Haz clic para subir tu propio Banner (Ideal: 600x60)">
-                <img id="logo-banner" src="" style="display:none; max-height: 55px; max-width: 500px; margin-right: 15px;">
+                <img id="logo-banner" src="" alt="Farmacia La Violeta" style="display:none; max-height: 55px; max-width: 500px; margin-right: 15px;">
                 <h1 id="texto-logo" class="header-title" style="display:inline-block;">Farmacia La Violeta</h1>
             </label>
             <input type="file" id="banner-upload" accept="image/*" style="display: none;" onchange="cargarBanner(event)">
         </div>
         <div class="header-right">
             <button id="btn-usuario-actual" class="btn-usuario-header" onclick="abrirModalLogin()">👤 Ingresar</button>
-            <button class="header-icon-btn" title="Vademécum" onclick="cambiarModulo('vademecum')">💊</button>
-            <button class="header-icon-btn solo-admin oculto" id="btn-header-inventario" title="Actualizar Inventario" onclick="cambiarModulo('inventario')">⚙️</button>
+            <button class="header-icon-btn" title="Vademécum" aria-label="Vademécum" onclick="cambiarModulo('vademecum')">💊</button>
+            <button class="header-icon-btn solo-admin oculto" id="btn-header-inventario" title="Actualizar Inventario" aria-label="Actualizar Inventario" onclick="cambiarModulo('inventario')">⚙️</button>
         </div>
     </header>
 
-    <div class="main-tabs">
-        <button class="main-tab-btn activo" id="btn-mod-pos" onclick="cambiarModulo('pos')">🛒 Venta</button>
+    <nav class="main-tabs" aria-label="Módulos">
+        <button class="main-tab-btn activo" id="btn-mod-pos" aria-current="page" onclick="cambiarModulo('pos')">🛒 Venta</button>
         <button class="main-tab-btn" id="btn-mod-dashboard" onclick="cambiarModulo('dashboard')">📊 Inventario</button>
         <button class="main-tab-btn solo-admin oculto" id="btn-mod-ajustes" onclick="cambiarModulo('ajustes')">✏️ Ajustar Inventario</button>
         <button class="main-tab-btn solo-admin oculto" id="btn-mod-pedidos" onclick="cambiarModulo('pedidos')">📦 Pedidos y Movimientos</button>
@@ -296,109 +296,109 @@
         <button class="main-tab-btn solo-admin oculto" id="btn-mod-corte" onclick="cambiarModulo('corte')">✂️ Corte</button>
         <button class="main-tab-btn solo-admin oculto" id="btn-mod-fidelizacion" onclick="cambiarModulo('fidelizacion')">👥 Clientes</button>
         <button class="main-tab-btn solo-admin oculto" id="btn-mod-configuracion" onclick="cambiarModulo('configuracion')" style="margin-left:auto;">🛠️ Configuración</button>
-    </div>
+    </nav>
 
     <div class="reloj-flotante"><span id="reloj-simple">-- - --- &nbsp;&nbsp; --:-- --</span></div>
 
     <!-- MODAL LOGIN POR PIN (turno) -->
-    <div id="modal-login" class="modal-pantalla">
+    <div id="modal-login" class="modal-pantalla" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-login">
         <div class="modal-caja" style="max-width:350px; text-align:center;">
-            <h3>Iniciar Turno</h3>
+            <h3 id="titulo-modal-login">Iniciar Turno</h3>
             <div id="login-pin-normal">
                 <p style="font-size:0.85rem; color:var(--texto-suave); margin-top:-5px; margin-bottom:15px;">Selecciona tu nombre e ingresa tu PIN.</p>
-                <select id="login-select-user" class="buscador-input" style="margin-bottom: 15px; font-weight:bold; font-size:1.1rem;"></select>
-                <input type="password" id="login-pin" class="buscador-input" placeholder="PIN" style="text-align:center; font-size:1.5rem; letter-spacing: 5px; margin-bottom: 15px;" maxlength="4" onkeydown="if(event.key==='Enter') procesarLogin()">
+                <select id="login-select-user" class="buscador-input" aria-label="Nombre del personal" style="margin-bottom: 15px; font-weight:bold; font-size:1.1rem;"></select>
+                <input type="password" id="login-pin" class="buscador-input" placeholder="PIN" aria-label="PIN de 4 dígitos" style="text-align:center; font-size:1.5rem; letter-spacing: 5px; margin-bottom: 15px;" maxlength="4" onkeydown="if(event.key==='Enter') procesarLogin()">
                 <div style="display:flex; gap:10px;">
-                    <button id="btn-cancelar-login" class="btn-pendiente" onclick="document.getElementById('modal-login').style.display='none'">Cancelar</button>
+                    <button id="btn-cancelar-login" class="btn-pendiente" data-modal-cerrar onclick="document.getElementById('modal-login').style.display='none'">Cancelar</button>
                     <button class="btn-concretar" onclick="procesarLogin()">Ingresar</button>
                 </div>
             </div>
             <div id="login-pin-primerouso" class="oculto">
                 <p style="font-size:0.85rem; color:var(--texto-suave); margin-top:-5px; margin-bottom:15px;">Todavía no hay personal registrado. Crea el primer usuario para empezar a vender.</p>
-                <input type="text" id="primer-user-nombre" class="buscador-input" placeholder="Tu nombre" style="margin-bottom:10px;">
-                <input type="password" id="primer-user-pin" class="buscador-input" placeholder="Crea un PIN (4 dígitos)" style="text-align:center; font-size:1.3rem; letter-spacing: 5px; margin-bottom: 15px;" maxlength="4" onkeydown="if(event.key==='Enter') crearPrimerUsuario()">
+                <input type="text" id="primer-user-nombre" class="buscador-input" placeholder="Tu nombre" aria-label="Tu nombre" style="margin-bottom:10px;">
+                <input type="password" id="primer-user-pin" class="buscador-input" placeholder="Crea un PIN (4 dígitos)" aria-label="Crea un PIN de 4 dígitos" style="text-align:center; font-size:1.3rem; letter-spacing: 5px; margin-bottom: 15px;" maxlength="4" onkeydown="if(event.key==='Enter') crearPrimerUsuario()">
                 <button class="btn-concretar" style="width:100%;" onclick="crearPrimerUsuario()">Crear y entrar</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL AÑADIR PROMOCIÓN -->
-    <div id="modal-promo" class="modal-pantalla">
+    <div id="modal-promo" class="modal-pantalla" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-promo">
         <div class="modal-caja" style="display: flex; flex-direction: column; max-height: 80vh;">
-            <h3>Añadir a Promociones</h3>
+            <h3 id="titulo-modal-promo">Añadir a Promociones</h3>
             <p style="font-size:0.85rem; color:var(--texto-suave); text-align:center; margin-top:-10px;">Busca el producto que deseas fijar en la pantalla principal.</p>
-            <input type="text" id="buscador-promo" class="buscador-input" placeholder="🔍 Buscar producto..." oninput="buscarPromoPOS()">
+            <input type="text" id="buscador-promo" class="buscador-input" placeholder="🔍 Buscar producto..." aria-label="Buscar producto para promoción" oninput="buscarPromoPOS()">
             <div id="lista-resultados-promo" style="flex-grow: 1; overflow-y: auto; margin-top: 10px; border-top: 1px solid var(--gris-claro); padding-top: 10px;"></div>
-            <button class="btn-pendiente" style="background:var(--texto-suave); color:white; margin-top: 15px;" onclick="cerrarModalPromo()">Cerrar</button>
+            <button class="btn-pendiente" data-modal-cerrar style="background:var(--texto-suave); color:white; margin-top: 15px;" onclick="cerrarModalPromo()">Cerrar</button>
         </div>
     </div>
 
     <!-- MODAL DESCUENTO -->
-    <div id="modal-descuento" class="modal-pantalla">
+    <div id="modal-descuento" class="modal-pantalla" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-descuento">
         <div class="modal-caja" style="max-width:320px;">
-            <h3 style="border-bottom: 2px solid var(--gris-claro); padding-bottom: 10px;">Aplicar Descuento</h3>
+            <h3 id="titulo-modal-descuento" style="border-bottom: 2px solid var(--gris-claro); padding-bottom: 10px;">Aplicar Descuento</h3>
             <div style="display:flex; align-items:center; margin-bottom:15px; justify-content: space-between;">
-                <label style="font-weight:600;">Total Actual:</label>
+                <span style="font-weight:600;">Total Actual:</span>
                 <strong id="desc-total-actual" style="font-size:1.3rem;">$0</strong>
             </div>
             <div style="display:flex; align-items:center; margin-bottom:15px; justify-content: space-between;">
-                <label style="font-weight:600;">Descuento %:</label>
+                <label for="desc-porcentaje" style="font-weight:600;">Descuento %:</label>
                 <input type="number" id="desc-porcentaje" class="buscador-input" style="width: 120px; text-align:right; font-weight:bold;" oninput="calcDesc('porcentaje')">
             </div>
             <div style="display:flex; align-items:center; margin-bottom:25px; justify-content: space-between;">
-                <label style="font-weight:600;">Nuevo Total $:</label>
+                <label for="desc-monto" style="font-weight:600;">Nuevo Total $:</label>
                 <input type="number" id="desc-monto" class="buscador-input" style="width: 120px; text-align:right; font-weight:bold;" oninput="calcDesc('monto')">
             </div>
             <div style="display:flex; gap:10px;">
                 <button class="btn-concretar" onclick="aplicarDescuento()">✅ Aplicar</button>
-                <button class="btn-pendiente" style="background:var(--texto-suave); color:white;" onclick="cerrarModalDescuento()">❌ Quitar</button>
+                <button class="btn-pendiente" data-modal-cerrar style="background:var(--texto-suave); color:white;" onclick="cerrarModalDescuento()">❌ Quitar</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL PAGO -->
-    <div id="modal-pago" class="modal-pantalla" style="z-index:4500;">
+    <div id="modal-pago" class="modal-pantalla" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-pago" style="z-index:4500;">
         <div class="modal-caja">
-            <h3 style="font-size:1.3rem;">Finalizar Venta</h3>
+            <h3 id="titulo-modal-pago" style="font-size:1.3rem;">Finalizar Venta</h3>
             <h2 style="text-align:center; color:var(--rojo-corazon); font-size: 2.2rem; margin: 10px 0;">Total: <span id="modal-total-pago">$0</span></h2>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                <button id="btn-sel-tarjeta" onclick="seleccionarMetodo('tarjeta')" style="flex: 1; padding: 15px; border: 2px solid var(--gris-claro); border-radius: 8px; background: white; cursor: pointer; font-size: 1.1rem; font-weight: bold; color: var(--texto-oscuro);">💳 Tarjeta</button>
-                <button id="btn-sel-efectivo" onclick="seleccionarMetodo('efectivo')" style="flex: 1; padding: 15px; border: 2px solid var(--gris-claro); border-radius: 8px; background: white; cursor: pointer; font-size: 1.1rem; font-weight: bold; color: var(--texto-oscuro);">💵 Efectivo</button>
+                <button id="btn-sel-tarjeta" aria-pressed="false" onclick="seleccionarMetodo('tarjeta')" style="flex: 1; padding: 15px; border: 2px solid var(--gris-claro); border-radius: 8px; background: white; cursor: pointer; font-size: 1.1rem; font-weight: bold; color: var(--texto-oscuro);">💳 Tarjeta</button>
+                <button id="btn-sel-efectivo" aria-pressed="false" onclick="seleccionarMetodo('efectivo')" style="flex: 1; padding: 15px; border: 2px solid var(--gris-claro); border-radius: 8px; background: white; cursor: pointer; font-size: 1.1rem; font-weight: bold; color: var(--texto-oscuro);">💵 Efectivo</button>
             </div>
             <div id="div-efectivo" style="display: none; margin-bottom:20px; background:var(--lila-fondo); padding:15px; border-radius:8px; border: 1px solid var(--morado-pastel);">
-                <label style="font-weight:bold; display:block; margin-bottom:8px; text-align: center;">Monto Entregado ($):</label>
+                <label for="monto-recibido" style="font-weight:bold; display:block; margin-bottom:8px; text-align: center;">Monto Entregado ($):</label>
                 <input type="number" id="monto-recibido" class="buscador-input" oninput="calcularVuelto()" style="margin-bottom:10px; font-size:1.3rem; text-align:center; font-weight: bold;">
                 <div style="font-size:1.2rem; font-weight:bold; color:var(--morado-oscuro); text-align:center; margin-top: 10px;">Vuelto a entregar: <br><span id="vuelto-calculado" style="color:var(--verde-exito); font-size:2rem;">$0</span></div>
             </div>
             <div style="display:flex; gap:10px; margin-top: 20px;">
-                <button class="btn-pendiente" style="background:var(--texto-suave); color:white;" onclick="cerrarModalPago()">Cancelar</button>
+                <button class="btn-pendiente" data-modal-cerrar style="background:var(--texto-suave); color:white;" onclick="cerrarModalPago()">Cancelar</button>
                 <button id="btn-confirmar-pago" class="btn-concretar" onclick="procesarPagoConcretado()" disabled>✅ Confirmar Pago</button>
             </div>
         </div>
     </div>
 
     <!-- MODAL VINCULAR CLIENTE A LA VENTA -->
-    <div id="modal-cliente-pos" class="modal-pantalla">
+    <div id="modal-cliente-pos" class="modal-pantalla" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-cliente-pos">
         <div class="modal-caja" style="display: flex; flex-direction: column; max-height: 80vh;">
-            <h3>Vincular Cliente</h3>
-            <input type="text" id="buscador-cliente-pos" class="buscador-input" placeholder="🔍 Buscar por RUT o Nombre..." oninput="buscarClientePOS()">
+            <h3 id="titulo-modal-cliente-pos">Vincular Cliente</h3>
+            <input type="text" id="buscador-cliente-pos" class="buscador-input" placeholder="🔍 Buscar por RUT o Nombre..." aria-label="Buscar cliente por RUT o nombre" oninput="buscarClientePOS()">
             <div id="lista-clientes-pos" style="flex-grow: 1; overflow-y: auto; margin-top: 10px; border-top: 1px solid var(--gris-claro); padding-top: 10px;"></div>
-            <button class="btn-pendiente" style="background:var(--texto-suave); color:white; margin-top: 15px;" onclick="cerrarModalClientePOS()">Volver</button>
+            <button class="btn-pendiente" data-modal-cerrar style="background:var(--texto-suave); color:white; margin-top: 15px;" onclick="cerrarModalClientePOS()">Volver</button>
         </div>
     </div>
 
     <!-- MODAL HISTORIAL DE CORTES -->
-    <div id="modal-historial-cortes" class="modal-pantalla">
+    <div id="modal-historial-cortes" class="modal-pantalla" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-historial-cortes">
         <div class="modal-caja" style="max-width:600px; max-height: 80vh; display: flex; flex-direction: column;">
             <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--gris-claro); padding-bottom:10px; margin-bottom:15px;">
-                <h3 style="margin:0;">📋 Historial de Cortes de Caja</h3>
-                <button onclick="document.getElementById('modal-historial-cortes').style.display='none'" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">✖</button>
+                <h3 id="titulo-modal-historial-cortes" style="margin:0;">📋 Historial de Cortes de Caja</h3>
+                <button data-modal-cerrar aria-label="Cerrar historial de cortes" onclick="document.getElementById('modal-historial-cortes').style.display='none'" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">✖</button>
             </div>
             <div id="lista-historial-cortes" style="flex-grow: 1; overflow-y: auto;"></div>
         </div>
     </div>
 
-    <div class="app-content">
+    <main class="app-content">
 
         <!-- MÓDULO: VENTA POS -->
         <div id="modulo-pos" class="app-modulo activo">
@@ -408,10 +408,10 @@
                         <input type="text" id="pos-search" class="buscador-input" style="margin-bottom:10px;" placeholder="🔍 Buscar producto o escanear código..." autocomplete="off" role="combobox" aria-label="Buscar producto o escanear código" aria-autocomplete="list" aria-controls="pos-results" aria-expanded="false">
 
                         <div class="pos-results-header" id="pos-results-header" style="display:none;">
-                            <div class="sortable-header" onclick="ordenarResultados('nombre')" title="Ordenar por Nombre">Nombre <span id="sort-icon-nombre" class="sort-icon"></span></div>
-                            <div class="sortable-header" style="justify-content:center;" onclick="ordenarResultados('stock')" title="Ordenar por Stock">Stock <span id="sort-icon-stock" class="sort-icon"></span></div>
-                            <div class="sortable-header" style="justify-content:center;" onclick="ordenarResultados('depto')" title="Ordenar por Departamento">Depto <span id="sort-icon-depto" class="sort-icon"></span></div>
-                            <div class="sortable-header" style="justify-content:flex-end;" onclick="ordenarResultados('precio')" title="Ordenar por Precio">Precio <span id="sort-icon-precio" class="sort-icon"></span></div>
+                            <div class="sortable-header" data-col="nombre" onclick="ordenarResultados('nombre')" title="Ordenar por Nombre">Nombre <span id="sort-icon-nombre" class="sort-icon" aria-hidden="true"></span></div>
+                            <div class="sortable-header" data-col="stock" style="justify-content:center;" onclick="ordenarResultados('stock')" title="Ordenar por Stock">Stock <span id="sort-icon-stock" class="sort-icon" aria-hidden="true"></span></div>
+                            <div class="sortable-header" data-col="depto" style="justify-content:center;" onclick="ordenarResultados('depto')" title="Ordenar por Departamento">Depto <span id="sort-icon-depto" class="sort-icon" aria-hidden="true"></span></div>
+                            <div class="sortable-header" data-col="precio" style="justify-content:flex-end;" onclick="ordenarResultados('precio')" title="Ordenar por Precio">Precio <span id="sort-icon-precio" class="sort-icon" aria-hidden="true"></span></div>
                         </div>
 
                         <div id="pos-results" role="listbox" aria-label="Resultados de búsqueda" style="display: none; flex-direction: column; gap: 8px; max-height: 55vh; overflow-y: auto;"></div>
@@ -419,7 +419,7 @@
                         <div id="panel-promociones">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 2px solid var(--morado-pastel); padding-bottom: 5px;">
                                 <h3 style="margin: 0; color: var(--morado-oscuro); font-size: 1.1rem;">⭐ Productos en Promoción</h3>
-                                <button onclick="abrirModalPromo()" style="background: var(--morado-vibrante); color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem;" title="Añadir nueva promoción">+</button>
+                                <button onclick="abrirModalPromo()" style="background: var(--morado-vibrante); color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 1rem;" title="Añadir nueva promoción" aria-label="Añadir producto a promociones">+</button>
                             </div>
                             <div id="lista-promociones" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; max-height: 55vh; overflow-y: auto; padding-right: 5px;"></div>
                         </div>
@@ -430,18 +430,18 @@
                             <div style="font-size: 0.95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"><span style="margin-right: 5px;">👤</span> <strong id="pos-cliente-nombre" style="color: var(--texto-suave);">Venta Anónima</strong></div>
                             <div style="display: flex; gap: 5px;">
                                 <button onclick="abrirModalClientePOS();" style="background: var(--morado-vibrante); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: bold;">+ Cliente</button>
-                                <button id="btn-quitar-cliente" onclick="quitarClientePOS()" style="display: none; background: var(--rojo-corazon); color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">✖</button>
+                                <button id="btn-quitar-cliente" aria-label="Quitar cliente de la venta" onclick="quitarClientePOS()" style="display: none; background: var(--rojo-corazon); color: white; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">✖</button>
                             </div>
                         </div>
                         <div class="cart-container">
                             <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--gris-claro); padding-bottom: 8px; margin-bottom: 10px;">
                                 <h3 style="margin: 0; color: var(--morado-oscuro); display: flex; align-items: center; gap: 8px;">🛒 Caja</h3>
                                 <div style="display: flex; gap: 5px;" title="Selecciona una caja para atender varios clientes a la vez">
-                                    <button id="tab-cart-0" class="cart-tab activo" onclick="cambiarCarrito(0)">1</button>
-                                    <button id="tab-cart-1" class="cart-tab" onclick="cambiarCarrito(1)">2</button>
-                                    <button id="tab-cart-2" class="cart-tab" onclick="cambiarCarrito(2)">3</button>
-                                    <button id="tab-cart-3" class="cart-tab" onclick="cambiarCarrito(3)">4</button>
-                                    <button id="tab-cart-4" class="cart-tab" onclick="cambiarCarrito(4)">5</button>
+                                    <button id="tab-cart-0" class="cart-tab activo" aria-label="Caja 1, vacía" aria-pressed="true" onclick="cambiarCarrito(0)">1</button>
+                                    <button id="tab-cart-1" class="cart-tab" aria-label="Caja 2, vacía" aria-pressed="false" onclick="cambiarCarrito(1)">2</button>
+                                    <button id="tab-cart-2" class="cart-tab" aria-label="Caja 3, vacía" aria-pressed="false" onclick="cambiarCarrito(2)">3</button>
+                                    <button id="tab-cart-3" class="cart-tab" aria-label="Caja 4, vacía" aria-pressed="false" onclick="cambiarCarrito(3)">4</button>
+                                    <button id="tab-cart-4" class="cart-tab" aria-label="Caja 5, vacía" aria-pressed="false" onclick="cambiarCarrito(4)">5</button>
                                 </div>
                             </div>
 
@@ -458,7 +458,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div style="text-align: right; margin-bottom: 12px; margin-top: -3px;"><small style="color:var(--texto-suave);">(Doble clic en el total para descuento)</small></div>
+                                <div style="text-align: right; margin-bottom: 12px; margin-top: -3px;"><small style="color:var(--texto-suave);">(Doble clic o Enter en el total para descuento)</small></div>
 
                                 <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                                     <button id="btn-guardar-pendiente" class="btn-pendiente" onclick="pausarVenta()" disabled title="Mover a otra caja vacía">⏳ Pausar Venta</button>
@@ -494,8 +494,8 @@
                 </div>
 
                 <div class="dash-toolbar">
-                    <input type="text" id="dash-search" class="buscador-input" style="margin:0;" placeholder="🔍 Buscar producto o código...">
-                    <select id="dash-orden">
+                    <input type="text" id="dash-search" class="buscador-input" style="margin:0;" placeholder="🔍 Buscar producto o código..." aria-label="Buscar producto o código en el inventario">
+                    <select id="dash-orden" aria-label="Ordenar inventario">
                         <option value="nombre">Nombre (A-Z)</option>
                         <option value="stock-asc">Menor a mayor</option>
                         <option value="vendidos-mes">Más vendidos del mes</option>
@@ -517,30 +517,30 @@
                 <div class="ajuste-form-container">
                     <h2 style="color: var(--morado-oscuro); margin-top: 0; border-bottom: 2px solid var(--gris-claro); padding-bottom: 10px;">Ajustar Inventario</h2>
                     <div class="ajuste-row" style="margin-top: 20px;">
-                        <label class="ajuste-label">Código del Producto</label>
+                        <label class="ajuste-label" for="ajust-codigo">Código del Producto</label>
                         <div class="ajuste-field" style="display: flex; gap: 10px;">
                             <input type="text" id="ajust-codigo" class="ajuste-input" placeholder="Escanea o escribe código y presiona Enter..." autocomplete="off">
                             <button class="btn-concretar" style="flex: none; width: auto; padding: 10px 15px;" onclick="procesarBuscadorAjuste()">Buscar</button>
                         </div>
                     </div>
                     <div class="ajuste-row">
-                        <label class="ajuste-label">Descripción</label>
+                        <span class="ajuste-label">Descripción</span>
                         <div class="ajuste-field"><span id="ajust-desc" class="ajuste-desc-text" style="color: var(--texto-suave); font-weight: normal; font-size: 1rem;">Esperando producto...</span></div>
                     </div>
                     <div class="ajuste-row">
-                        <label class="ajuste-label">Cantidad Actual</label>
+                        <label class="ajuste-label" for="ajust-actual">Cantidad Actual</label>
                         <div class="ajuste-field"><input type="text" id="ajust-actual" class="ajuste-input short ajuste-readonly" value="0" readonly></div>
                     </div>
                     <div class="ajuste-row">
-                        <label class="ajuste-label">+ / - (Sumar o Restar)</label>
+                        <label class="ajuste-label" for="ajust-delta">+ / - (Sumar o Restar)</label>
                         <div class="ajuste-field"><input type="number" id="ajust-delta" class="ajuste-input short" placeholder="Ej: 5 o -2" disabled></div>
                     </div>
                     <div class="ajuste-row">
-                        <label class="ajuste-label">Nueva Cantidad Total</label>
+                        <label class="ajuste-label" for="ajust-nueva">Nueva Cantidad Total</label>
                         <div class="ajuste-field"><input type="number" id="ajust-nueva" class="ajuste-input short" placeholder="0" disabled></div>
                     </div>
                     <div class="ajuste-row">
-                        <label class="ajuste-label">Motivo del ajuste</label>
+                        <label class="ajuste-label" for="ajust-motivo">Motivo del ajuste</label>
                         <div class="ajuste-field"><input type="text" id="ajust-motivo" class="ajuste-input" placeholder="Ej: Llegó mercadería, Inventario físico..." disabled></div>
                     </div>
                     <div style="text-align: center; margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
@@ -557,7 +557,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 2px solid var(--gris-claro); padding-bottom: 10px; margin-bottom: 10px;">
                         <h2 style="color: var(--morado-oscuro); margin: 0; font-size: 1.2rem;">Historial de Movimientos de Inventario</h2>
                         <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="date" id="filtro-fecha-movimientos" class="buscador-input" style="padding: 8px 10px; width: auto; font-family: inherit; margin: 0;">
+                            <input type="date" id="filtro-fecha-movimientos" class="buscador-input" aria-label="Filtrar movimientos por fecha" style="padding: 8px 10px; width: auto; font-family: inherit; margin: 0;">
                             <button class="btn-pendiente" style="padding: 8px 12px; width: auto; flex: none; font-size: 0.85rem;" id="btn-limpiar-filtro-mov">Todas</button>
                         </div>
                     </div>
@@ -609,10 +609,10 @@
                     </div>
                     <div class="config-box" style="flex: 1; min-width: 280px; border-top: 4px solid var(--naranja-pendiente);">
                         <h3 style="margin-top:0; color: var(--naranja-texto);">Arqueo Físico</h3>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="font-weight: 600; font-size: 0.95rem;">Retiro de dinero ($):</label><input type="number" id="corte-retiro" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="font-weight: 600; font-size: 0.95rem;">Efectivo en caja ($):</label><input type="number" id="corte-efectivo" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="font-weight: 600; font-size: 0.95rem;">Tarjetas (Voucher) ($):</label><input type="number" id="corte-tarjeta" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label style="font-weight: 600; font-size: 0.95rem;">Otros ($):</label><input type="number" id="corte-otros" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label for="corte-retiro" style="font-weight: 600; font-size: 0.95rem;">Retiro de dinero ($):</label><input type="number" id="corte-retiro" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label for="corte-efectivo" style="font-weight: 600; font-size: 0.95rem;">Efectivo en caja ($):</label><input type="number" id="corte-efectivo" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label for="corte-tarjeta" style="font-weight: 600; font-size: 0.95rem;">Tarjetas (Voucher) ($):</label><input type="number" id="corte-tarjeta" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;"><label for="corte-otros" style="font-weight: 600; font-size: 0.95rem;">Otros ($):</label><input type="number" id="corte-otros" class="buscador-input" style="width: 140px; padding: 8px; text-align:right; font-weight: bold; margin:0;" placeholder="0"></div>
                         <hr style="border:0; border-top:1px dashed var(--gris-claro); margin: 15px 0;">
                         <div style="display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; margin-bottom: 10px;"><strong>Sub Total (Declarado):</strong><strong id="corte-subtotal">$0</strong></div>
                         <div class="corte-diferencia-box" id="corte-diferencia-box"><strong>Diferencia:</strong><strong id="corte-diferencia">$0</strong></div>
@@ -629,7 +629,7 @@
             <div class="fid-layout">
                 <div class="fid-sidebar">
                     <h2 style="color:var(--morado-oscuro); margin:0 0 5px 0; font-size:1.2rem;">👥 Clientes</h2>
-                    <input type="text" id="buscar-cliente" class="buscador-input" placeholder="Buscar por RUT o nombre..." style="margin:15px 0;">
+                    <input type="text" id="buscar-cliente" class="buscador-input" placeholder="Buscar por RUT o nombre..." aria-label="Buscar cliente por RUT o nombre" style="margin:15px 0;">
                     <button class="btn-nuevo" onclick="mostrarFormularioNuevoCliente()">+ Registrar Cliente</button>
                     <div class="lista-clientes" id="lista-clientes"></div>
                 </div>
@@ -637,11 +637,11 @@
                     <div id="vista-formulario-cliente" class="fid-card oculto">
                         <h2 style="color:var(--morado-oscuro); margin-top:0;">Registro de Cliente</h2>
                         <div class="form-grid">
-                            <input type="text" id="reg-rut" placeholder="RUT (ej: 19123456-7)">
-                            <input type="text" id="reg-nombre" placeholder="Nombres">
-                            <input type="text" id="reg-apellido" placeholder="Apellidos">
-                            <input type="text" id="reg-telefono" placeholder="Teléfono">
-                            <textarea id="reg-notas" placeholder="Notas adicionales (ej: prefiere genéricos, alergias, etc.)" style="grid-column: span 2; resize: vertical; min-height: 80px; font-family: inherit; padding:10px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;"></textarea>
+                            <input type="text" id="reg-rut" placeholder="RUT (ej: 19123456-7)" aria-label="RUT del cliente">
+                            <input type="text" id="reg-nombre" placeholder="Nombres" aria-label="Nombres">
+                            <input type="text" id="reg-apellido" placeholder="Apellidos" aria-label="Apellidos">
+                            <input type="text" id="reg-telefono" placeholder="Teléfono" aria-label="Teléfono">
+                            <textarea id="reg-notas" placeholder="Notas adicionales (ej: prefiere genéricos, alergias, etc.)" aria-label="Notas adicionales" style="grid-column: span 2; resize: vertical; min-height: 80px; font-family: inherit; padding:10px; border:1px solid #ccc; border-radius:6px; box-sizing:border-box;"></textarea>
                         </div>
                         <button id="btn-guardar-cliente" class="btn-nuevo" style="margin-top: 20px;" onclick="guardarCliente()">Guardar Cliente</button>
                     </div>
@@ -679,7 +679,7 @@
                     <input type="file" id="file-vademecum-excel" accept=".xlsx,.xls,.csv" style="display:none;" onchange="procesarExcelVademecum(event)">
                     <span id="estado-excel-vademecum" style="margin-left:10px; color:var(--morado-oscuro); font-weight:bold;"></span>
                 </div>
-                <input type="text" id="buscador-vademecum" class="buscador-input" placeholder="🔍 Buscar por principio activo, nombre comercial o indicación..." style="margin-bottom:15px;">
+                <input type="text" id="buscador-vademecum" class="buscador-input" placeholder="🔍 Buscar por principio activo, nombre comercial o indicación..." aria-label="Buscar en el vademécum" style="margin-bottom:15px;">
                 <div class="filtros" id="contenedor-filtros"></div>
                 <div id="resultados-vademecum">
                     <div style="text-align:center; padding:15px; color:var(--texto-suave);">Aún no se ha cargado el Vademécum.</div>
@@ -701,7 +701,7 @@
                     <input type="file" id="file-inventario-excel" accept=".xlsx,.xls,.csv" style="display:none;" onchange="procesarExcelInventario(event)">
                     <span id="estado-excel-inventario" style="margin-left:10px; color:var(--morado-oscuro); font-weight:bold;"></span>
                 </div>
-                <textarea id="paste-area" placeholder="...o pega aquí los datos de tu Excel" rows="8" style="width:100%; padding:10px; font-family:monospace; font-size:16px; margin-bottom:10px; border-radius:8px; border:2px solid var(--gris-claro); box-sizing:border-box;"></textarea>
+                <textarea id="paste-area" placeholder="...o pega aquí los datos de tu Excel" aria-label="Datos de Excel pegados" rows="8" style="width:100%; padding:10px; font-family:monospace; font-size:16px; margin-bottom:10px; border-radius:8px; border:2px solid var(--gris-claro); box-sizing:border-box;"></textarea>
                 <button class="btn-concretar" id="btn-procesar-inventario" onclick="procesarPegado()" style="width:100%; padding:15px; font-size:1.05rem;">📥 Procesar y Guardar Inventario</button>
                 <p style="margin-top:20px; font-weight:bold; color:var(--morado-oscuro); font-size: 1.2rem;">
                     Productos guardados: <span id="inv-count" style="color: var(--rojo-corazon);">0</span>
@@ -718,9 +718,9 @@
                     <p style="font-size:0.85rem; color:var(--texto-suave); margin-top:-5px;">Cada persona del personal usa su nombre + un PIN de 4 dígitos para identificarse en las ventas y ajustes de stock. Esto es distinto del correo/contraseña de la cuenta compartida de Firebase.</p>
                     <div style="display: flex; gap: 30px; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 250px;">
-                            <label style="font-weight:bold; display:block; margin-bottom:5px;">Nombre del Cajero:</label>
+                            <label for="nuevo-user-nombre" style="font-weight:bold; display:block; margin-bottom:5px;">Nombre del Cajero:</label>
                             <input type="text" id="nuevo-user-nombre" class="buscador-input" placeholder="Ej: Sandra I.">
-                            <label style="font-weight:bold; display:block; margin-bottom:5px; margin-top:10px;">PIN de Acceso (4 dígitos):</label>
+                            <label for="nuevo-user-pin" style="font-weight:bold; display:block; margin-bottom:5px; margin-top:10px;">PIN de Acceso (4 dígitos):</label>
                             <input type="password" id="nuevo-user-pin" class="buscador-input" placeholder="****" maxlength="4" style="letter-spacing: 5px; font-weight:bold;">
                             <label style="display:flex; align-items:center; gap:8px; margin-top:12px; font-weight:600; cursor:pointer;">
                                 <input type="checkbox" id="nuevo-user-admin" style="width:auto;"> Es administrador (acceso a todo)
@@ -754,9 +754,9 @@
             </div>
         </div>
 
-    </div>
+    </main>
 
-    <div id="toast-container"></div>
+    <div id="toast-container" role="status" aria-live="polite"></div>
 
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -851,6 +851,137 @@
             return String(texto ?? '').normalize("NFD").replace(new RegExp("[\\u0300-\\u036f]", "g"), "").toLowerCase();
         }
 
+        // ----------------------------------------------------
+        // CATÁLOGO EN MEMORIA: se actualiza solo con los cambios de cada snapshot
+        // y guarda el texto ya normalizado para no recalcularlo en cada búsqueda.
+        // El texto va en un WeakMap (no dentro del producto) para que no viaje
+        // al copiar el producto a un carrito ni a Firestore.
+        // ----------------------------------------------------
+        const productosPorId = new Map();
+        const textoBusquedaProducto = new WeakMap();
+
+        function indexarProducto(p) {
+            textoBusquedaProducto.set(p, { n: normalizar(p.producto), c: normalizar(p.codigo) });
+        }
+
+        function productoCoincide(p, textoNormalizado) {
+            let t = textoBusquedaProducto.get(p);
+            if (!t) { indexarProducto(p); t = textoBusquedaProducto.get(p); }
+            return t.n.includes(textoNormalizado) || t.c.includes(textoNormalizado);
+        }
+
+        function aplicarCambiosProductos(cambios) {
+            cambios.forEach(ch => {
+                const id = ch.doc.id;
+                const previo = productosPorId.get(id);
+                if (ch.type === 'removed') {
+                    if (!previo) return;
+                    const i = inventarioMemoria.indexOf(previo);
+                    if (i >= 0) inventarioMemoria.splice(i, 1);
+                    const clave = String(previo.codigo).toLowerCase();
+                    if (inventarioDict[clave] === previo) delete inventarioDict[clave];
+                    productosPorId.delete(id);
+                    return;
+                }
+                const datos = ch.doc.data();
+                if (previo) {
+                    const claveVieja = String(previo.codigo).toLowerCase();
+                    Object.keys(previo).forEach(k => delete previo[k]);
+                    Object.assign(previo, { codigo: id }, datos);
+                    if (inventarioDict[claveVieja] === previo) delete inventarioDict[claveVieja];
+                    inventarioDict[String(previo.codigo).toLowerCase()] = previo;
+                    indexarProducto(previo);
+                } else {
+                    const nuevo = { codigo: id, ...datos };
+                    inventarioMemoria.push(nuevo);
+                    productosPorId.set(id, nuevo);
+                    inventarioDict[String(nuevo.codigo).toLowerCase()] = nuevo;
+                    indexarProducto(nuevo);
+                }
+            });
+        }
+
+        // ----------------------------------------------------
+        // ACCESIBILIDAD: teclado en elementos clicables y modales (foco, Tab y Escape)
+        // ----------------------------------------------------
+        function hacerAccionable(el, etiqueta) {
+            el.setAttribute('role', 'button');
+            el.tabIndex = 0;
+            if (etiqueta) el.setAttribute('aria-label', etiqueta);
+            el.addEventListener('keydown', e => {
+                if ((e.key === 'Enter' || e.key === ' ') && e.target === el) { e.preventDefault(); el.click(); }
+            });
+            return el;
+        }
+
+        const SELECTOR_ENFOCABLES = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]):not([type="file"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+        const modalesAbiertos = [];
+        let focoFueraDeModal = null;
+
+        document.addEventListener('focusin', e => {
+            if (!e.target.closest('.modal-pantalla')) focoFueraDeModal = e.target;
+        });
+
+        function enfocablesDe(modal) {
+            return [...modal.querySelectorAll(SELECTOR_ENFOCABLES)].filter(el => el.getClientRects().length > 0);
+        }
+
+        function alAbrirModal(modal) {
+            const activo = document.activeElement;
+            const previo = (activo && activo !== document.body && !modal.contains(activo)) ? activo : focoFueraDeModal;
+            modalesAbiertos.push({ modal, previo });
+            setTimeout(() => {
+                if (modal.contains(document.activeElement)) return;
+                const primero = enfocablesDe(modal)[0];
+                if (primero) primero.focus();
+            }, 0);
+        }
+
+        function alCerrarModal(modal) {
+            const i = modalesAbiertos.findIndex(m => m.modal === modal);
+            if (i < 0) return;
+            const previo = modalesAbiertos.splice(i, 1)[0].previo;
+            setTimeout(() => {
+                const activo = document.activeElement;
+                if ((activo === document.body || modal.contains(activo)) && previo && previo.isConnected && previo.getClientRects().length > 0) previo.focus();
+            }, 0);
+        }
+
+        const observadorModales = new MutationObserver(cambios => cambios.forEach(({ target: modal }) => {
+            const abierto = getComputedStyle(modal).display !== 'none';
+            const registrado = modalesAbiertos.some(m => m.modal === modal);
+            if (abierto && !registrado) alAbrirModal(modal);
+            else if (!abierto && registrado) alCerrarModal(modal);
+        }));
+        document.querySelectorAll('.modal-pantalla').forEach(m => observadorModales.observe(m, { attributes: true, attributeFilter: ['style'] }));
+
+        document.addEventListener('keydown', e => {
+            const tope = modalesAbiertos[modalesAbiertos.length - 1];
+            if (!tope) return;
+            const modal = tope.modal;
+            if (e.key === 'Escape') {
+                const cerrar = [...modal.querySelectorAll('[data-modal-cerrar]')].find(b => b.getClientRects().length > 0);
+                if (cerrar) { e.preventDefault(); cerrar.click(); }
+                return;
+            }
+            if (e.key !== 'Tab') return;
+            const focos = enfocablesDe(modal);
+            if (focos.length === 0) { e.preventDefault(); return; }
+            const primero = focos[0], ultimo = focos[focos.length - 1];
+            if (!modal.contains(document.activeElement)) { e.preventDefault(); primero.focus(); }
+            else if (e.shiftKey && document.activeElement === primero) { e.preventDefault(); ultimo.focus(); }
+            else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primero.focus(); }
+        });
+
+        document.querySelectorAll('.file-label').forEach(l => hacerAccionable(l));
+
+        const filaTotalCarrito = document.querySelector('.cart-total-row');
+        filaTotalCarrito.setAttribute('role', 'button');
+        filaTotalCarrito.tabIndex = 0;
+        filaTotalCarrito.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrirModalDescuento(); }
+        });
+
         function normalizarRut(rut) {
             return String(rut || '').replace(/[^0-9kK]/g, '').toUpperCase();
         }
@@ -901,10 +1032,10 @@
         }
 
         function iniciarListeners() {
+            let primeraCargaProductos = true;
             db.collection('productos').onSnapshot(snap => {
-                inventarioMemoria = snap.docs.map(d => ({ codigo: d.id, ...d.data() }));
-                inventarioDict = {};
-                inventarioMemoria.forEach(p => { inventarioDict[p.codigo.toLowerCase()] = p; });
+                if (primeraCargaProductos) { inventarioMemoria = []; inventarioDict = {}; productosPorId.clear(); primeraCargaProductos = false; }
+                aplicarCambiosProductos(snap.docChanges());
                 const contadorInv = document.getElementById('inv-count');
                 if (contadorInv) contadorInv.innerText = inventarioMemoria.length.toLocaleString('es-CL');
                 renderizarDashboardSiVisible();
@@ -1090,7 +1221,7 @@
                     </div>
                     <div style="display:flex; gap:10px; align-items:center; flex-shrink:0;">
                         <button data-id="${escapeHtml(u.id)}" class="btn-toggle-rol" style="background:none; border:1px solid var(--morado-pastel); color:var(--morado-oscuro); border-radius:6px; padding:4px 8px; cursor:pointer; font-size:0.75rem;">${esAdminActual ? 'Quitar admin' : 'Hacer admin'}</button>
-                        <button data-id="${escapeHtml(u.id)}" class="btn-eliminar-usuario" style="background:none; border:none; color:var(--rojo-corazon); cursor:pointer; font-size:1.1rem; font-weight:bold;" title="Eliminar usuario">✖</button>
+                        <button data-id="${escapeHtml(u.id)}" class="btn-eliminar-usuario" style="background:none; border:none; color:var(--rojo-corazon); cursor:pointer; font-size:1.1rem; font-weight:bold;" title="Eliminar usuario" aria-label="Eliminar a ${escapeHtml(u.nombre)}">✖</button>
                     </div>
                 </div>`;
             });
@@ -1147,10 +1278,10 @@
         function cambiarModulo(id) {
             if (MODULOS_SOLO_ADMIN.includes(id) && !esAdmin()) { mostrarToast('Necesitás ser administrador para esto.', 'error'); return; }
             document.querySelectorAll('.app-modulo').forEach(mod => mod.classList.remove('activo'));
-            document.querySelectorAll('.main-tab-btn').forEach(btn => btn.classList.remove('activo'));
+            document.querySelectorAll('.main-tab-btn').forEach(btn => { btn.classList.remove('activo'); btn.removeAttribute('aria-current'); });
             document.getElementById('modulo-' + id).classList.add('activo');
             const btnTab = document.getElementById('btn-mod-' + id);
-            if (btnTab) btnTab.classList.add('activo');
+            if (btnTab) { btnTab.classList.add('activo'); btnTab.setAttribute('aria-current', 'page'); }
 
             if (id === 'pos' && !esTactil) setTimeout(() => document.getElementById('pos-search').focus(), 100);
             if (id === 'dashboard') { cargarTopVentas(); if (dashboardSucio) renderizarDashboard(); }
@@ -1183,10 +1314,11 @@
             const c = document.getElementById('lista-resultados-promo');
             c.innerHTML = '';
             if (!b.trim()) return;
-            const res = inventarioMemoria.filter(p => normalizar(p.producto).includes(b) || normalizar(p.codigo).includes(b)).slice(0, 15);
+            const res = inventarioMemoria.filter(p => productoCoincide(p, b)).slice(0, 15);
             res.forEach(p => {
                 const d = document.createElement('div');
                 d.style.padding = '10px'; d.style.borderBottom = '1px solid #eee'; d.style.cursor = 'pointer';
+                hacerAccionable(d);
                 d.innerHTML = `<strong>${escapeHtml(p.producto)}</strong> <span style="color:var(--rojo-corazon); font-weight:bold; float:right;">$${p.precio.toLocaleString('es-CL')}</span><br><small>Cod: ${escapeHtml(p.codigo)} | Stock: ${p.stock || 0}</small>`;
                 d.onclick = () => {
                     if (promocionesCodigos.includes(p.codigo)) { mostrarToast('Este producto ya está en promoción.', 'info'); }
@@ -1225,13 +1357,13 @@
                 const d = document.createElement('div');
                 d.className = 'promo-card';
                 d.innerHTML = `
-                    <button class="btn-eliminar-promo" title="Quitar de promociones">✖</button>
+                    <button class="btn-eliminar-promo" title="Quitar de promociones" aria-label="Quitar ${escapeHtml(p.producto)} de promociones">✖</button>
                     <div>
                         <span class="badge-stock ${claseStock}" style="float:right;">${stockNum}</span>
                         <strong style="display:block; font-size:0.9rem; margin-bottom:5px; color:var(--morado-oscuro); line-height:1.2; padding-right:25px;" title="${escapeHtml(p.producto)}">${escapeHtml(p.producto)}</strong>
                         <div style="font-size:1.1rem; font-weight:bold; color:var(--rojo-corazon); margin-bottom:5px;">$${p.precio.toLocaleString('es-CL')}</div>
                     </div>
-                    <button class="btn-vender-promo">🛒 Vender</button>
+                    <button class="btn-vender-promo" aria-label="Agregar ${escapeHtml(p.producto)} al carrito">🛒 Vender</button>
                 `;
                 d.querySelector('.btn-eliminar-promo').onclick = () => quitarPromocion(cod);
                 d.querySelector('.btn-vender-promo').onclick = () => agregarPromocionAlCarrito(cod);
@@ -1277,6 +1409,8 @@
             finalizarBusquedaPos();
         });
         buscadorPos.addEventListener('input', () => manejarBusquedaPos());
+        document.querySelectorAll('.sortable-header').forEach(h => hacerAccionable(h));
+        actualizarEtiquetasOrden();
 
         function estadoComboPos(abierto) {
             buscadorPos.setAttribute('aria-expanded', abierto ? 'true' : 'false');
@@ -1318,7 +1452,7 @@
             const header = document.getElementById('pos-results-header');
             const promos = document.getElementById('panel-promociones');
 
-            const res = inventarioMemoria.filter(p => normalizar(p.producto).includes(b) || normalizar(p.codigo).includes(b)).slice(0, 50);
+            const res = inventarioMemoria.filter(p => productoCoincide(p, b)).slice(0, 50);
             if (res.length === 0) {
                 header.style.display = 'none'; promos.style.display = 'none'; cr.style.display = 'flex';
                 cr.innerHTML = '<div style="padding:15px; text-align:center; color:var(--texto-suave);">No se encontraron resultados.</div>';
@@ -1356,6 +1490,15 @@
                 if (valA < valB) return sortAsc ? -1 : 1;
                 if (valA > valB) return sortAsc ? 1 : -1;
                 return 0;
+            });
+            actualizarEtiquetasOrden();
+        }
+
+        function actualizarEtiquetasOrden() {
+            const nombres = { nombre: 'Nombre', stock: 'Stock', depto: 'Departamento', precio: 'Precio' };
+            document.querySelectorAll('.sortable-header').forEach(h => {
+                const col = h.dataset.col;
+                h.setAttribute('aria-label', 'Ordenar por ' + nombres[col] + (col === sortCol ? (sortAsc ? ', orden ascendente' : ', orden descendente') : ''));
             });
         }
 
@@ -1442,6 +1585,8 @@
                 if (i === carritoActivo) btn.className = tieneItems ? 'cart-tab ocupado activo' : 'cart-tab activo';
                 else if (tieneItems) btn.className = 'cart-tab ocupado';
                 else btn.className = 'cart-tab';
+                btn.setAttribute('aria-label', 'Caja ' + (i + 1) + (tieneItems ? ', con productos' : ', vacía'));
+                btn.setAttribute('aria-pressed', i === carritoActivo ? 'true' : 'false');
             }
         }
         function pausarVenta() {
@@ -1500,7 +1645,7 @@
                 sum += sub;
                 const d = document.createElement('div');
                 d.className = 'cart-item';
-                d.innerHTML = `<div class="cart-item-info"><strong>${escapeHtml(i.producto)}</strong><br>$${i.precio.toLocaleString('es-CL')} c/u</div><div style="display:flex; justify-content:space-between; width:100%; align-items:center;"><div class="cart-controls"><button data-idx="${idx}" data-delta="-1">-</button><span>${i.cantidad}</span><button data-idx="${idx}" data-delta="1">+</button></div><strong style="color:var(--rojo-corazon);">$${sub.toLocaleString('es-CL')}</strong></div>`;
+                d.innerHTML = `<div class="cart-item-info"><strong>${escapeHtml(i.producto)}</strong><br>$${i.precio.toLocaleString('es-CL')} c/u</div><div style="display:flex; justify-content:space-between; width:100%; align-items:center;"><div class="cart-controls"><button data-idx="${idx}" data-delta="-1" aria-label="Quitar una unidad de ${escapeHtml(i.producto)}">-</button><span>${i.cantidad}</span><button data-idx="${idx}" data-delta="1" aria-label="Agregar una unidad de ${escapeHtml(i.producto)}">+</button></div><strong style="color:var(--rojo-corazon);">$${sub.toLocaleString('es-CL')}</strong></div>`;
                 c.appendChild(d);
             });
             c.querySelectorAll('.cart-controls button').forEach(btn => {
@@ -1553,7 +1698,7 @@
                 <div class="cliente-item" data-id="${escapeHtml(c.id)}">
                     <strong>${escapeHtml(c.nombre)} ${escapeHtml(c.apellido || '')}</strong><br><small>${escapeHtml(c.rut)}</small>
                 </div>`).join('');
-            l.querySelectorAll('.cliente-item').forEach(el => { el.onclick = () => seleccionarClientePOS(el.dataset.id); });
+            l.querySelectorAll('.cliente-item').forEach(el => { hacerAccionable(el); el.onclick = () => seleccionarClientePOS(el.dataset.id); });
         }
         function seleccionarClientePOS(rutId) {
             const cliente = clientesMemoria.find(c => c.id === rutId);
@@ -1583,6 +1728,8 @@
             metodoPagoSeleccionado = m;
             document.getElementById('btn-sel-tarjeta').style.background = m === 'tarjeta' ? 'var(--lila-fondo)' : 'white';
             document.getElementById('btn-sel-efectivo').style.background = m === 'efectivo' ? 'var(--lila-fondo)' : 'white';
+            document.getElementById('btn-sel-tarjeta').setAttribute('aria-pressed', m === 'tarjeta' ? 'true' : 'false');
+            document.getElementById('btn-sel-efectivo').setAttribute('aria-pressed', m === 'efectivo' ? 'true' : 'false');
             if (m === 'efectivo') {
                 document.getElementById('div-efectivo').style.display = 'block';
                 document.getElementById('monto-recibido').focus();
@@ -1761,7 +1908,7 @@
                 return;
             }
 
-            let filas = inventarioMemoria.filter(p => !termino || normalizar(p.producto).includes(termino) || normalizar(p.codigo).includes(termino));
+            let filas = inventarioMemoria.filter(p => !termino || productoCoincide(p, termino));
             if (orden === 'vendidos-mes') {
                 filas = filas.map(p => ({ ...p, vendidosMes: unidadesVendidas(p.codigo, ventasDelMes) }));
                 filas.sort((a, b) => b.vendidosMes - a.vendidosMes);
@@ -1793,9 +1940,9 @@
                 const vendidosMes = p.vendidosMes !== undefined ? p.vendidosMes : unidadesVendidas(p.codigo, ventasDelMes);
                 const celdaStock = admin
                     ? `<div class="ajuste-stock-dash">
-                            <button data-idx="${idx}" data-delta="-1">-</button>
-                            <span class="badge-stock-dash ${claseBadge}" data-idx="${idx}" title="Click para fijar un valor exacto">${stock}</span>
-                            <button data-idx="${idx}" data-delta="1">+</button>
+                            <button data-idx="${idx}" data-delta="-1" aria-label="Restar 1 al stock de ${escapeHtml(p.producto)}">-</button>
+                            <span class="badge-stock-dash ${claseBadge}" data-idx="${idx}" title="Click para fijar un valor exacto" aria-label="Stock de ${escapeHtml(p.producto)}: ${stock}. Pulsa para fijar un valor exacto">${stock}</span>
+                            <button data-idx="${idx}" data-delta="1" aria-label="Sumar 1 al stock de ${escapeHtml(p.producto)}">+</button>
                         </div>`
                     : `<span class="badge-stock-dash ${claseBadge}">${stock}</span>`;
                 return `
@@ -1809,7 +1956,7 @@
             }).join('');
             if (admin) {
                 tbody.querySelectorAll('.ajuste-stock-dash button').forEach(btn => { btn.onclick = () => ajustarStockDash(parseInt(btn.dataset.idx), parseInt(btn.dataset.delta)); });
-                tbody.querySelectorAll('.ajuste-stock-dash .badge-stock-dash').forEach(el => { el.onclick = () => pedirNuevoStockDash(parseInt(el.dataset.idx)); });
+                tbody.querySelectorAll('.ajuste-stock-dash .badge-stock-dash').forEach(el => { hacerAccionable(el); el.onclick = () => pedirNuevoStockDash(parseInt(el.dataset.idx)); });
             }
 
             if (paginacion) {
@@ -1961,6 +2108,7 @@
                 const btnPedir = document.createElement('button');
                 btnPedir.className = 'btn-add-pedido';
                 btnPedir.title = 'Añadir a proveedor';
+                btnPedir.setAttribute('aria-label', 'Añadir ' + mov.producto + ' a la lista de proveedor');
                 btnPedir.textContent = '+';
                 btnPedir.onclick = () => agregarAlPedido(mov.codigo, mov.producto);
                 tr.lastElementChild.appendChild(btnPedir);
@@ -1999,9 +2147,11 @@
                 controlesDiv.style.cssText = 'display:flex; align-items:center; gap:6px;';
                 const inputCant = document.createElement('input');
                 inputCant.type = 'number'; inputCant.className = 'input-cant-pedido'; inputCant.value = i.cantidad;
+                inputCant.setAttribute('aria-label', 'Cantidad a pedir de ' + i.nombre);
                 inputCant.onchange = () => modificarCantPedido(i.codigo, inputCant.value);
                 const btnQuitar = document.createElement('button');
                 btnQuitar.textContent = '✖';
+                btnQuitar.setAttribute('aria-label', 'Quitar ' + i.nombre + ' de la lista de proveedor');
                 btnQuitar.style.cssText = 'background:var(--rojo-corazon); color:white; border:none; border-radius:4px; padding:4px 6px; cursor:pointer;';
                 btnQuitar.onclick = () => eliminarDelPedido(i.codigo);
                 controlesDiv.appendChild(inputCant); controlesDiv.appendChild(btnQuitar);
@@ -2403,14 +2553,13 @@
             datos.forEach(f => {
                 const div = document.createElement('div');
                 div.className = 'farmaco-card';
-                div.onclick = (e) => { if (e.target.closest('.info-grid')) return; div.classList.toggle('abierto'); };
                 div.innerHTML = `
                     <div class="farmaco-header">
                         <div class="titulo-grupo">
                             <h2>${escapeHtml(f.principioActivo)}</h2>
                             <span class="tag-grupo">${escapeHtml(f.grupo)}</span>
                         </div>
-                        <div class="flecha">▼</div>
+                        <div class="flecha" aria-hidden="true">▼</div>
                     </div>
                     <div class="info-grid">
                         <div class="info-box"><h3>Acción</h3><p>${escapeHtml(f.accion)}</p></div>
@@ -2420,6 +2569,14 @@
                         <div class="info-box"><h3>Nombres Comerciales</h3><p>${escapeHtml(f.comercial)}</p></div>
                     </div>
                 `;
+                const cabecera = div.querySelector('.farmaco-header');
+                hacerAccionable(cabecera);
+                cabecera.setAttribute('aria-expanded', 'false');
+                div.onclick = (e) => {
+                    if (e.target.closest('.info-grid')) return;
+                    div.classList.toggle('abierto');
+                    cabecera.setAttribute('aria-expanded', div.classList.contains('abierto') ? 'true' : 'false');
+                };
                 cont.appendChild(div);
             });
         }
@@ -2452,7 +2609,7 @@
                     <strong>${escapeHtml(c.nombre)} ${escapeHtml(c.apellido || '')}</strong><br>
                     <small>${escapeHtml(c.rut)} · ⭐ ${c.puntos || 0} pts</small>
                 </div>`).join('');
-            cont.querySelectorAll('.cliente-item').forEach(el => { el.onclick = () => verPerfilCliente(el.dataset.id); });
+            cont.querySelectorAll('.cliente-item').forEach(el => { hacerAccionable(el); el.onclick = () => verPerfilCliente(el.dataset.id); });
         }
         document.getElementById('buscar-cliente').addEventListener('input', renderizarListaClientes);
 
